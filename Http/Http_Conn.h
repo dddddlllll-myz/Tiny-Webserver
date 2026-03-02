@@ -23,6 +23,9 @@
 #include <map>
 
 #include "../Lock/Lock.h"
+#include "../CGI_MySql/Sql_Conn_Pool.h"
+#include "../timer/lst_timer.h"
+#include "../log/log.h"
 
 class Http_Conn {
 public:
@@ -30,8 +33,7 @@ public:
     static const int READ_BUFFER_SIZE = 2048;       // 读缓冲区大小
     static const int WRITE_BUFFER_SIZE = 1024;      // 写缓冲区大小
 
-    enum METHOD
-    {
+    enum METHOD {
         GET = 0,
         POST,
         HEAD,
@@ -41,17 +43,15 @@ public:
         OPTIONS,
         CONNECT,
         PATH
-    };
+    }; // HTTP请求方法
 
-    enum CHECK_STATE
-    {
+    enum CHECK_STATE {
         CHECK_STATE_REQUESTLINE = 0,
         CHECK_STATE_HEADER,
         CHECK_STATE_CONTENT
-    };
+    }; // 主状态机的状态
 
-    enum HTTP_CODE
-    {
+    enum HTTP_CODE {
         NO_REQUEST,
         GET_REQUEST,
         BAD_REQUEST,
@@ -60,14 +60,13 @@ public:
         FILE_REQUEST,
         INTERNAL_ERROR,
         CLOSED_CONNECTION
-    };
+    }; // 服务器处理HTTP请求的结果
     
-    enum LINE_STATUS
-    {
+    enum LINE_STATUS {
         LINE_OK = 0,
         LINE_BAD,
         LINE_OPEN
-    };
+    }; // 从状态机的状态
 
 public:
     Http_Conn() {}
@@ -79,10 +78,11 @@ public:
     void process();
     bool read_once();
     bool write();
-    sockaddr_in *get_address()
-    {
+
+    sockaddr_in *get_address() {
         return &m_address;
     }
+    
     void initmysql_result(connection_pool *connPool);
     int timer_flag;
     int improv;
