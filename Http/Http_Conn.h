@@ -24,8 +24,8 @@
 
 #include "../Lock/Lock.h"
 #include "../CGI_MySql/Sql_Conn_Pool.h"
-#include "../timer/lst_timer.h"
-#include "../log/log.h"
+#include "../Timer/Lst_Timer.h"
+#include "../Log/Log.h"
 
 class Http_Conn {
 public:
@@ -83,7 +83,7 @@ public:
         return &m_address;
     }
     
-    void initmysql_result(connection_pool *connPool);
+    void initmysql_result(Conn_Pool *connPool);
     int timer_flag;
     int improv;
 
