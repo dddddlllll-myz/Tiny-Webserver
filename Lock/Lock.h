@@ -8,7 +8,7 @@
 class Lock {
 public:
     Lock() {
-        if( pthread_mutex_init(&m_mutex, nullptr) != 0 ) {
+        if(pthread_mutex_init(&m_mutex, nullptr) != 0) {
             throw std::exception();
         }
     }
@@ -37,7 +37,7 @@ private:
 class Condition {
 public:
     Condition() {
-        if( pthread_cond_init(&m_cond, nullptr) != 0 ) {
+        if(pthread_cond_init(&m_cond, nullptr) != 0) {
             throw std::exception();
         }
     }
@@ -74,13 +74,13 @@ private:
 class Semaphore {
 public:
     Semaphore() {
-        if( sem_init(&m_sem, 0, 0) != 0 ) {
+        if(sem_init(&m_sem, 0, 0) != 0) {
             throw std::exception();
         }
     }
 
     Semaphore(int value) {
-        if( sem_init(&m_sem, 0, value) != 0 ) {
+        if(sem_init(&m_sem, 0, value) != 0) {
             throw std::exception();
         }
     }
@@ -90,11 +90,11 @@ public:
     }
 
     bool wait() {
-        return sem_wait(&m_sem) == 0;
+        return sem_wait(&m_sem) == 0; // sem_wait函数将以原子操作方式将信号量减一,信号量为0时,sem_wait阻塞
     }
 
     bool post() {
-        return sem_post(&m_sem) == 0;
+        return sem_post(&m_sem) == 0; // sem_post函数以原子操作方式将信号量加一,如果有线程在sem_wait上阻塞则唤醒其中一个等待线程。
     }
 
 private:
