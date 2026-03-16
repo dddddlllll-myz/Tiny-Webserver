@@ -84,8 +84,8 @@ public:
     }
     
     void initmysql_result(Conn_Pool *connPool);
-    int timer_flag;
-    int improv;
+    int timer_flag; //是否启用定时器
+    int improv;  //是否有数据传输
 
 private:
     void init();
@@ -126,10 +126,10 @@ private:
     METHOD m_method;
     char m_real_file[FILENAME_LEN];
     char *m_url;
-    char *m_version;
+    char *m_version; // HTTP协议版本号
     char *m_host;
     long m_content_length;
-    bool m_linger;
+    bool m_linger; // HTTP请求是否保持连接
     char *m_file_address;
     struct stat m_file_stat;
     struct iovec m_iv[2];
@@ -141,7 +141,7 @@ private:
     char *doc_root;
 
     map<string, string> m_users;
-    int m_TRIGMode;
+    int m_TRIGMode; // 触发组合模式 
     int m_close_log;
 
     char sql_user[100];

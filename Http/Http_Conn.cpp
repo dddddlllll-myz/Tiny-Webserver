@@ -113,3 +113,157 @@ void Http_Conn::init(int sockfd, const sockaddr_in &addr, char *root, int TRIGMo
 
     init();
 }
+
+//初始化新接受的连接
+//check_state默认为分析请求行状态
+void Http_Comm::init() {
+    mysql = NULL;
+    bytes_to_send = 0;
+    bytes_have_send = 0;
+    m_check_state = CHECK_STATE_REQUESTLINE;
+    m_linger = false;
+    m_method = GET;
+    m_url = NULL;
+    m_version = NULL;
+    m_content_length = 0;
+    m_host = NULL;
+    m_start_line = 0;
+    m_checked_idx = 0;
+    m_read_idx = 0;
+    m_write_idx = 0;
+    m_cgi = 0;
+    m_state = 0;
+    timer_flag = 0;
+    improv = 0;
+
+    memset(m_read_buf, '\0', READ_BUFFER_SIZE);
+    memset(m_write_buf, '\0', WRITE_BUFFER_SIZE);
+    memset(m_real_file, '\0', FILENAME_LEN);
+}
+
+//从状态机，用于分析出一行内容
+//返回值为行的读取状态，有LINE_OK,LINE_BAD,LINE_OPEN
+Http_Conn::LINE_STATUS Http_Conn::parse_line() {
+    char temp;
+    for(; m_checked_idx < m_read_idx; ++m_checked_idx) {
+        temp = m_read_buf[m_checked_idx];
+        if(temp == '\r') {
+            if((m_checked_idx + 1) == m_read_idx) return LINE_OPEN; //说明\r还没有接收完
+            else if(m_read_buf[m_checked_idx + 1] == '\n') {
+                m_read_buf[m_checked_idx++] = '\0';
+                m_read_buf[m_checked_idx++] = '\0'; //将\r\n改为\0\0
+                return LINE_OK;
+            }
+            return LINE_BAD;
+        }
+        else if(temp == '\n') {
+            if((m_checked_idx > 1) && (m_read_buf[m_checked_idx - 1] == '\r')) {
+                m_read_buf[m_checked_idx - 1] = '\0';
+                m_read_buf[m_checked_idx++] = '\0'; //将\r\n改为\0\0
+                return LINE_OK;
+            }
+            return LINE_BAD;
+        }
+    }
+
+    return LINE_OPEN;
+}
+
+//循环读取客户数据，直到无数据可读或对方关闭连接
+//非阻塞ET工作模式下，需要一次性将数据读完
+bool Http_Conn::read_once() {
+    if(m_read_idx >= READ_BUFFER_SIZE) return false;
+
+    int bytes_read = 0;
+
+    //LT读取数据
+    if(m_TRIGMode == 0) {
+        bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
+        if(bytes_read <= 0) return false;
+        m_read_idx += bytes_read;
+        return true;
+    }
+    //ET读取数据
+    else {
+        while(1) {
+            bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
+            if(bytes_read == -1) {
+                if(errno == EAGAIN || errno == EWOULDBLOCK) break; //非阻塞ET模式下，读完所有数据后，recv会返回-1，并且errno会被置为EAGAIN或EWOULDBLOCK
+                return false;
+            }
+            else if(bytes_read == 0) return false;
+            m_read_idx += bytes_read;
+        }
+        return true;
+    }
+}
+
+//解析http请求行，获得请求方法，目标url及http版本号
+Http_Conn::HTTP_CODE Http_Conn::parse_request_line(char* text) {
+    m_url = strpbrk(text, " \t"); //in string.h, strpbrk函数会返回字符串text中第一个匹配字符串" \t"中任一字符的位置
+    if(!m_url) return BAD_REQUEST;
+    *m_url++ = '\0'; //将请求行中的第一个空格或\t改为\0，字符串text现在只包含请求方法
+
+    char* method = text;
+    if(strcasecmp(method, "GET") == 0) m_method = GET;
+    else if(strcasecmp(method, "POST") == 0) {
+        m_method = POST;
+        m_cgi = 1; //POST请求需要解析请求体，且请求体中包含用户提交的数据
+    }
+    else return BAD_REQUEST;
+
+    m_url += strspn(m_url, " \t"); //跳过请求行中空格或\t字符，m_url现在指向请求行中的目标url
+
+    m_version = strpbrk(m_url, " \t"); //m_url中第一个空格或\t字符的位置，m_version现在指向请求行中的http版本号
+    if(!m_version) return BAD_REQUEST;
+    *m_version++ = '\0'; //将请求行中的第二个空格或\t改为\0，字符串m_url现在只包含目标url
+    m_version += strspn(m_version, " \t"); //跳过请求行中空格或\t字符，m_version现在指向请求行中的http版本号
+
+    if(strcasecmp(m_version, "HTTP/1.1") != 0) return BAD_REQUEST;
+
+    if(strcasecmp(m_url, "http://", 7) == 0) {
+        m_url += 7;
+        m_url = strchr(m_url, '/'); //strchr函数会返回字符串m_url中第一次出现字符'/'的位置
+    }
+
+    if(strcasecmp(m_url, "https://", 8) == 0) {
+        m_url += 8;
+        m_url = strchr(m_url, '/'); //strchr函数会返回字符串m_url中第一次出现字符'/'的位置
+    }
+
+    if(!m_url || m_url[0] != '/') return BAD_REQUEST; //请求行中的目标url不合法
+
+    if(strlen(m_url) == 1) strcat(m_url, "judge.html"); //如果请求行中的目标url为"/"，则将目标url改为"/judge.html"
+
+    m_check_state = CHECK_STATE_HEADER; //主状态机检查状态变为检查请求头
+    return NO_REQUEST;
+}
+
+//解析http请求的一个头部信息
+Http_Conn::HTTP_CODE Http_Conn::parse_headers(char* text) {
+    if(text[0] == '\0') { //如果遇到一个空行，说明请求头部字段解析完毕
+        if(m_content_length != 0) {
+            m_chech_state = CHECK_STATE_CONTENT; //主状态机检查状态变为检查请求体
+            return NO_REQUEST; //HTTP请求还不完整，需要继续读取客户数据才能得到完整的HTTP请求
+        }
+        return GET_REQUEST; //HTTP请求完整，准备响应客户请求
+    }
+    else if(strncasecmp(text, "Connection:", 11) == 0) {
+        text += 11;
+        text += strspn(text, " \t");
+        if(strcasecmp(text, "keep-alive") == 0) m_linger = true; //HTTP请求使用长连接
+    }
+    else if(strncasecmp(text, "Content-Length:", 15) == 0) {
+        text += 15;
+        text += strspn(text, " \t");
+        m_content_length = atol(text); //将字符串text转换为长整数，HTTP请求中Content-Length字段的值表示HTTP请求体的长度
+    }
+    else if(strncasecmp(text, "Host:", 5) == 0) {
+        text += 5;
+        text += strspn(text, " \t");
+        m_host = text;
+    }
+    else LOG_INFO("oop! unknow header %s\n", text);
+
+    return NO_REQUEST;
+}
