@@ -138,7 +138,7 @@ private:
     char *m_string; //存储请求头数据
     int bytes_to_send;
     int bytes_have_send;
-    char *doc_root;
+    char *doc_root; //网站根目录
 
     map<string, string> m_users;
     int m_TRIGMode; // 触发组合模式 

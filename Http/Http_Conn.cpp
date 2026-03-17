@@ -267,3 +267,148 @@ Http_Conn::HTTP_CODE Http_Conn::parse_headers(char* text) {
 
     return NO_REQUEST;
 }
+
+//判断http请求是否被完整读入
+Http_Conn::HTTP_CODE Http_Conn::parse_content(char* text) {
+    if(m_read_idx >= m_content_length + m_checked_idx) { //如果请求体的长度不为0，并且已经读取了完整的HTTP请求体
+        text[m_content_length] = '\0'; // 将HTTP请求体最后一个字节置为\0，字符串text现在只包含HTTP请求体
+        m_string = text; // m_string保存了HTTP请求体中客户提交的数据，主要是用户名和密码
+        return GET_REQUEST;
+    }
+    return NO_REQUEST;
+}
+
+Http_Conn::HTTP_CODE Http_Conn::process_read() {
+    LINE_STATUS line_status = LINE_OK; //记录当前行的读取状态
+    HTTP_CODE res = NO_REQUEST; //记录HTTP请求的处理结果
+    char* text = 0;
+
+    while((m_check_state == CHECK_STATE_CONTENT && line_status == LINE_OK) || (line_status = parse_line()) == LINE_OK) {
+        text = get_line();
+        m_start_line = m_checked_idx;
+        LOG_INFO("Got 1 http line: %s\n", text);
+
+        switch(m_check_state) {
+            case CHECK_STATE_REQUESTLINE: {
+                res = parse_request_line(text);
+                if(res == BAD_REQUEST) return BAD_REQUEST;
+                break;
+            }
+            case CHECK_STATE_HEADER: {
+                res = parse_headers(text);
+                if(res == BAD_REQUEST) return BAD_REQUEST;
+                else if(res == GET_REQUEST) return do_request();
+                break;
+            }
+            case CHECK_STATE_CONTENT: {
+                res = parse_content(text);
+                if(res == GET_REQUEST) return do_request();
+                line_status = LINE_OPEN; //解析请求体时，行状态应该设置为LINE_OPEN，因为HTTP请求体没有行的概念
+                break;
+            }
+            default: 
+                return INTERNAL_ERROR;
+        }
+    }
+
+    return NO_REQUEST;
+}
+
+Http_Conn::HTTP_CODE Http_Conn::do_request() {
+    strcpy(m_real_file, doc_root);
+    int len = strlen(doc_root);
+    printf("m_url:%s\n", m_url);
+    const char* p = strrchr(m_url, '/'); //strrchr函数会返回字符串m_url中最后一次出现字符'/'的位置
+
+    if(cgi == 1 && (*(p + 1) == '2' || *(p + 1) == '3')) {
+        //根据标志判断是登录检测还是注册检测
+        char flag = m_url[1]; //m_url的第一个字符为'/'
+        char* m_url_real = (char*)malloc(sizeof(char) * 200); //存储请求资源的文件路径，长度应足够大，防止指针越界
+        strcpy(m_url_real, "/");
+        strcat(m_url_real, m_url + 2); //将请求资源的文件路径存储在m_url_real中，m_url + 2跳过"/"和标志字符
+        strncpy(m_real_file + len, m_url_real, FILENAME_LEN - len - 1); //将请求资源的文件路径添加到m_real_file中，m_real_file中存储的就是请求资源的完整路径
+        free(m_url_real);
+
+        //解析用户名和密码
+        char name[100], password[100];
+        int i;
+        for(i = 5; m_string[i] != '&'; ++i) name[i - 5] = m_string[i]; //m_url的前5个字符为"/2"或"/3"，跳过这两个字符，解析用户名
+        name[i - 5] = '\0';
+
+        int j = 0;
+        for(i = i + 10; m_string[i] != '\0'; ++i, ++j) password[j] = m_string[i]; //m_string中用户名和密码之间有"&password="，跳过这10个字符，解析密码
+        password[j] = '\0';
+
+        if(flag == '3') {
+            //如果是注册，先检测数据库中是否有重名的
+            //没有重名的，进行增加数据
+            char* sql_insert = (char*)malloc(sizeof(char) * 200);
+            strcpy(sql_insert, "INSERT INTO user(username, passwd) VALUES(");
+            strcat(sql_insert, "'");
+            strcat(sql_insert, name);
+            strcat(sql_insert, "', '");
+            strcat(sql_insert, password);
+            strcat(sql_insert, "')");
+
+            if(users.find(name) == users.end()) {
+                m_lock.lock();
+                int res = mysql_query(mysql, sql_insert);
+                users.insert(pair<string, string>(name, password));
+                m_lock.unlock();
+            
+                if(!res) strcpy(m_url, "/log.html");
+                else strcpy(m_url, "/registerError.html");
+            }
+            else strcpy(m_url, "/registerError.html");
+        }
+        else if(flag == '2') {
+            //如果是登录，直接判断
+            if(users.find(name) != users.end() && users[name] == password) strcpy(m_url, "/welcome.html");
+            else strcpy(m_url, "/logError.html");
+        }
+    }
+
+    if(*(p + 1) == '0') { // 如果请求资源为/0，表示请求注册页面
+        char* m_url_real = (char*)malloc(sizeof(char) * 200);
+        strcpy(m_url_real, "/register.html");
+        strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
+        free(m_url_real);
+    }
+    else if(*(p + 1) == '1') { // 如果请求资源为/1，表示请求登录页面
+        char* m_url_real = (char*)malloc(sizeof(char) * 200);
+        strcpy(m_url_real, "/log.html");
+        strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
+        free(m_url_real);
+    }
+    else if(*(p + 1) == '5') { // 如果请求资源为/5，表示请求图片页面
+        char* m_url_real = (char*)malloc(sizeof(char) * 200);
+        strcpy(m_url_real, "/picture.html");
+        strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
+        free(m_url_real);
+    }
+    else if(*(p + 1) == '6') { // 如果请求资源为/6，表示请求视频页面
+        char* m_url_real = (char*)malloc(sizeof(char) * 200);
+        strcpy(m_url_real, "/video.html");
+        strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
+        free(m_url_real);
+    }
+    else if(*(p + 1) == '7') { // 如果请求资源为/7，表示请求关注页面
+        char* m_url_real = (char*)malloc(sizeof(char) * 200);
+        strcpy(m_url_real, "/fans.html");
+        strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
+        free(m_url_real);
+    }
+    else strncpy(m_real_file + len, m_url, FILENAME_LEN - len - 1); //其他情况，将请求资源的文件路径添加到m_real_file中
+
+    if(stat(m_real_file, &m_file_stat) < 0) return NO_RESOURCE; //如果请求资源的文件不存在，返回NO_RESOURCE
+
+    if(!(m_file_stat.st_mode & S_IROTH)) return FORBIDDEN_REQUEST; //如果请求资源的文件存在，但没有读取权限，返回FORBIDDEN_REQUEST
+
+    if(S_ISDIR(m_file_stat.st_mode)) return BAD_REQUEST; //如果请求资源的文件存在，但是一个目录，返回BAD_REQUEST
+
+    int fd = open(m_real_file, O_RDONLY); //以只读方式打开请求资源的文件，返回文件描述符
+    m_file_address = (char*)mmap(0, m_file_stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0); //将请求资源的文件映射到内存地址m_file_address，文件大小为m_file_stat.st_size，映射权限为只读，映射标志为私有，文件描述符为fd，映射偏移量为0
+    close(fd); //关闭文件描述符
+
+    return FILE_REQUEST; //请求资源的文件存在，且可以访问，返回FILE_REQUEST
+}
