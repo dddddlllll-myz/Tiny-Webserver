@@ -132,8 +132,8 @@ private:
     bool m_linger; // HTTP请求是否保持连接
     char *m_file_address;
     struct stat m_file_stat;
-    struct iovec m_iv[2];
-    int m_iv_count;
+    struct iovec m_iv[2]; // iovec结构体是一个描述内存块的结构体，包含一个指向内存块的指针和内存块的大小
+    int m_iv_count; // 采用writev来执行写操作，m_iv_count表示被写内存块的数量
     int cgi;        //是否启用的POST
     char *m_string; //存储请求头数据
     int bytes_to_send;

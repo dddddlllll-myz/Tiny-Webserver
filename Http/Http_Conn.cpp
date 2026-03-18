@@ -412,3 +412,170 @@ Http_Conn::HTTP_CODE Http_Conn::do_request() {
 
     return FILE_REQUEST; //请求资源的文件存在，且可以访问，返回FILE_REQUEST
 }
+
+void Http_Conn::unmap() {
+    if(m_file_address) {
+        munmap(m_file_address, m_file_stat.st_size); //解除文件映射
+        m_file_address = 0;
+    }
+}
+
+bool Http_Conn::write() {
+    int temp = 0;
+
+    if(bytes_to_send == 0) { //如果没有数据需要发送了，但客户仍然保持连接，应该继续监听客户连接，直到客户关闭连接
+        modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode);
+        init();
+        return true;
+    }
+
+    while(1) {
+        temp = writev(m_sockfd, m_iv, m_iv_count); // writev函数可以将多个非连续的内存块一次性写入到文件描述符中，m_iv是一个iovec结构体数组，m_iv_count是数组中元素的个数
+
+        if(temp < 0) {
+            if(errno == EAGAIN) { //如果TCP写缓冲区没有空间了，等待下一轮EPOLLOUT事件通知继续写数据
+                modfd(m_epollfd, m_sockfd, EPOLLOUT, m_TRIGMode);
+                return true;
+            }
+            unmap();
+            return false;
+        }
+    }
+
+    bytes_have_send += temp;
+    bytes_to_send -= temp;
+    if(bytes_have_send >= m_iv[0].iov_len) { //如果已经发送了响应报头，接下来发送响应正文
+        m_iv[0].iov_len = 0; 
+        m_iv[1].iov_base = m_file_address + (bytes_have_send - m_write_idx);
+        m_iv[1].iov_len = bytes_to_send;
+    }
+    else { //如果还没有发送完响应报头，继续发送响应报头
+        m_iv[0].iov_base = m_write_buf + bytes_have_send;
+        m_iv[0].iov_len = m_iv[0].iov_len - bytes_have_send;
+    }
+
+    if(bytes_to_send <= 0) { //如果响应报头和响应正文都发送完了
+        unmap();
+        modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode); //重新注册读事件，等待下一次客户请求
+        
+        if(m_linger) { //如果HTTP请求使用长连接，初始化HTTP连接对象，准备下一次客户请求
+            init();
+            return true;
+        }
+        else return false; //如果HTTP请求不使用长连接，关闭HTTP连接
+    }
+}
+
+bool Http_Conn::add_response(char* format, ...) { // 往响应报头中添加数据，format是响应报头的格式，...是可变参数，可以根据format的格式传入不同数量和类型的参数
+    if(m_write_idx >= WRITE_BUFFER_SIZE) return false;
+
+    va_list arg_list;
+    va_start(arg_list, format); // va_start宏将arg_list初始化为传入函数的可变参数列表，format是可变参数列表中的第一个参数
+    int len = vsnprintf(m_write_buf + m_write_idx, WRITE_BUFFER_SIZE - 1 - m_write_idx, format, arg_list); //将参数format和arg_list格式化输出到m_write_buf中，m_write_idx是m_write_buf中已经使用的字节数，WRITE_BUFFER_SIZE - 1 - m_write_idx是m_write_buf中剩余的字节数
+    if(len >= (WRITE_BUFFER_SIZE - 1 - m_write_idx)) {
+        va_end(arg_list);
+        return false;
+    }
+    m_write_idx += len;
+    va_end(arg_list);
+
+    LOG_INFO("request:%s", m_write_buf);
+
+    return true;
+}
+
+bool Http_Conn::add_status_line(int status, const char* title) {
+    return add_response("%s %d %s\r\n", "HTTP/1.1", status, title);
+}
+
+bool Http_Conn::add_content_length(int content_length) {
+    return add_response("Content-Length: %d\r\n", content_length);
+}
+
+bool Http_Conn::add_content_type() {
+    return add_response("Content-Type: %s\r\n", "text/html");
+}
+
+bool Http_Conn::add_linger() {
+    return add_response("Connection: %s\r\n", (m_linger == true) ? "keep-alive" : "close");
+}
+
+bool Http_Conn::add_blank_line() {
+    return add_response("%s", "\r\n");
+}
+
+bool Http_Conn::add_headers(int content_length) {
+    return add_content_length(content_length) && add_content_type() && add_linger() && add_blank_line(); 
+}
+
+bool Http_Conn::add_content(const char* content) {
+    return add_response("%s", content);
+}
+
+bool Http_Conn::process_write(HTTP_CODE res) { //根据HTTP请求的处理结果，生成响应报头，响应正文和响应状态码
+    switch(res) {
+        case INTERNAL_ERROR: {
+            add_status_line(500, error_500_title);
+            add_headers(strlen(error_500_form));
+            if(!add_content(error_500_form)) return false;
+            break;
+        }
+        case NO_RESOURCE: {
+            add_status_line(404, error_404_title);
+            add_headers(strlen(error_404_form));
+            if(!add_content(error_404_form)) return false;
+            break;
+        }
+        case BAD_REQUEST: {
+            add_status_line(400, error_400_title);
+            add_headers(strlen(error_400_form));
+            if(!add_content(error_400_form)) return false;
+            break;
+        }
+        case FORBIDDEN_REQUEST: {
+            add_status_line(403, error_403_title);
+            add_headers(strlen(error_403_form));
+            if(!add_content(error_403_form)) return false;
+            break;
+        }
+        case FILE_REQUEST: {
+            add_status_line(200, ok_200_title);
+            if(m_file_stat.st_size != 0) {
+                add_headers(m_file_stat.st_size);
+                m_iv[0].iov_base = m_write_buf; //响应报头的起始位置
+                m_iv[0].iov_len = m_write_idx; //响应报头的长度
+                m_iv[1].iov_base = m_file_address; //响应正文的起始位置
+                m_iv[1].iov_len = m_file_stat.st_size; //响应正文的长度
+                m_iv_count = 2;
+                bytes_to_send = m_write_idx + m_file_stat.st_size;
+                return true;
+            }
+            else { //如果请求的资源存在，但为空文件，响应报头和响应正文分开发送，响应正文内容为一个空的html文件
+                const char* ok_string = "<html><body></body></html>";
+                add_headers(strlen(ok_string));
+                if(!add_content(ok_string)) return false;
+            }
+        }
+        default:
+            return false;
+    }
+
+    m_iv[0].iov_base = m_write_buf; //响应报头的起始位置
+    m_iv[0].iov_len = m_write_idx; //响应报头的长度
+    m_iv_count = 1;
+    bytes_to_send = m_write_idx;
+
+    return true;
+}
+
+void Http_Conn::process() {
+    HTTP_CODE read_res = process_read(); //处理HTTP请求，生成响应报头，响应正文和响应状态码
+    if(read_res == NO_REQUEST) {
+        modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode); //如果HTTP请求不完整，继续监听客户连接，等待客户发送完整的HTTP请求
+        return;
+    }
+
+    bool write_res = process_write(read_res); //根据HTTP请求的处理结果，生成响应报头，响应正文和响应状态码
+    if(!write_res) close_conn(); //如果响应报头，响应正文和响应状态码生成失败，关闭HTTP连接
+    modfd(m_epollfd, m_sockfd, EPOLLOUT, m_TRIGMode); //如果响应报头，响应正文和响应状态码生成成功，开始监听客户连接的写事件，准备发送响应报头和响应正文
+}
