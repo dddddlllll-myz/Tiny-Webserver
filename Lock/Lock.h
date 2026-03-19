@@ -64,7 +64,7 @@ public:
     }
 
     bool broadcast() {
-        return pthread_cond_broadcast(&m_cond) == 0;
+        return pthread_cond_broadcast(&m_cond) == 0; // pthread_cond_broadcast函数将唤醒所有等待条件变量的线程，而pthread_cond_signal函数只会唤醒一个等待条件变量的线程。
     }
 
 private:
