@@ -51,3 +51,21 @@ void Conn_Pool::init(string url, string User, string PassWord, string DataBaseNa
     reserve = Semaphore(m_FreeConn); // 初始化信号量，值为连接池中的连接数量
     m_MaxConn = MaxConn;
 }
+
+MYSQL* Conn_Pool::GetConn() { //获取数据库连接
+    MYSQL* con = NULL;
+
+    if(connList.size() == 0) return NULL;
+
+    reserve.wait(); // 等待信号量，确保有可用连接
+
+    lock.lock(); // 加锁，保护连接池
+
+    con = connList.front(); // 获取连接池中的第一个连接
+    connList.pop_front(); // 从连接池中移除该连接
+    --m_FreeConn; // 可用连接数减1
+    ++m_CurrConn; // 当前连接数加1
+
+    lock.unlock(); // 解锁
+    return con; // 返回获取的连接
+}
