@@ -41,7 +41,8 @@ bool Log::init(const char *file_name, int close_log, int log_buf_size, int split
 
     if(p == nullptr) { //如果没有'/'，说明file_name就是文件名
         snprintf(log_full_name, 255, "%d_%02d_%02d_%s", my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday, file_name);
-    } else { //如果有'/'，说明file_name是路径+文件名
+    } 
+    else { //如果有'/'，说明file_name是路径+文件名
         strcpy(log_name, p + 1); //将文件名复制到log_name中
         strncpy(dir_name, file_name, p - file_name + 1); //将路径复制到dir_name中，注意这里要加1，因为p指向的是'/'，而不是路径的最后一个字符
         snprintf(log_full_name, 255, "%s%d_%02d_%02d_%s", dir_name, my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday, log_name);
@@ -109,7 +110,8 @@ void Log::write_log(int level, const char* format, ...) {
 
     if(m_is_async && !m_log_queue -> full()) { //如果是异步写日志，并且阻塞队列没有满，将日志内容添加到阻塞队列中
         m_log_queue -> push(log_str);
-    } else { //如果是同步写日志，或者阻塞队列已经满了，直接将日志内容写入文件中
+    } 
+    else { //如果是同步写日志，或者阻塞队列已经满了，直接将日志内容写入文件中
         m_mutex.lock();
         fputs(log_str.c_str(), m_fp); //将日志内容写入文件中，c_str()是string类型的成员函数，返回一个指向字符串内容的指针
         m_mutex.unlock();
