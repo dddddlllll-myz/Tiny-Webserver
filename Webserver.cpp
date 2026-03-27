@@ -88,5 +88,51 @@ void Webserver::thread_pool() {
 void Webserver::eventListen() {
     m_listenfd = socket(PF_INET, SOCK_STREAM, 0); //创建套接字，PF_INET表示IPv4协议，SOCK_STREAM表示TCP协议，0表示使用默认协议
     assert(m_listenfd >= 0); // 断言，判断socket函数是否成功创建了套接字，如果失败则输出错误信息并终止程序
+
+    if(0 == m_OPT_LINGER) { // 优雅关闭连接
+        struct linger tmp = {0, 1}; // 结构体linger，l_onoff为0表示不使用linger选项
+        setsockopt(m_listenfd, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp)); // 设置套接字选项，SOL_SOCKET表示套接字级别，SO_LINGER表示设置linger选项，tmp为设置的选项值，sizeof(tmp)为选项值的大小
+    }
+    else if(1 == m_OPT_LINGER) { // 强制关闭连接
+        struct linger tmp = {1, 1}; // l_onoff为1表示使用linger选项，l_linger为1表示最多等待1秒钟后强制关闭连接
+        setsockopt(m_listenfd, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp)); // 设置套接字选项
+    }
+
+    int res = 0;
+    struct sockaddr_in address; // 结构体sockaddr_in，表示IPv4地址
+    bzero(&address, sizeof(address)); // 将结构体清零
+    address.sin_family = AF_INET; // 地址族，AF_INET表示IPv4
+    address.sin_addr.s_addr = htonl(INADDR_ANY); // IP地址，htonl将主机字节序转换为网络字节序，INADDR_ANY表示任意地址
+    address.sin_port = htons(m_port); // 端口号，htons将主机字节序转换为网络字节序
+
+    int flag = 1; // 设置套接字选项，SO_REUSEADDR表示允许重用本地地址和端口
+    setsockopt(m_listenfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)); // 设置套接字选项
+    res = bind(m_listenfd, (struct sockaddr *)&address, sizeof(address)); // 绑定套接字，传入套接字文件描述符、地址结构体和地址结构体大小
+    assert(res >= 0); // 断言，判断bind函数是否成功绑定套接字，如果失败则输出错误信息并终止程序
+    res = listen(m_listenfd, 5); // 监听套接字，传入套接字文件描述符和监听队列长度
+    assert(res >= 0); // 断言，判断listen函数是否成功监听套接字，如果失败则输出错误信息并终止程序
+
+    utils.init(TIMESLOT); // 初始化工具类，传入定时器时间间隔
+
+    epoll_event events[MAX_EVENT_NUMBER]; // 定义epoll事件数组，大小为最大事件数
+    m_epollfd = epoll_create(5); // 创建epoll实例，传入epoll实例大小，返回epoll文件描述符
+    assert(m_epollfd != -1);
+
+    utils.addfd(m_epollfd, m_listenfd, false, m_LISTENTrigmode); // 将监听套接字添加到epoll实例中，传入epoll文件描述符、套接字文件描述符、是否使用EPOLLONESHOT和触发模式
+    Http_Conn::m_epollfd = m_epollfd; // 将epoll文件描述符赋值给Http_Conn类的静态成员变量，供Http_Conn类使用
+
+    res = socketpair(PF_UNIX, SOCK_STREAM, 0, m_pipefd); // 创建UNIX域套接字对，传入地址族、套接字类型、协议和套接字文件描述符数组
+    assert(res != -1);
+    utils.setnonblocking(m_pipefd[1]); // 将套接字对中的写端设置为非阻塞
+    utils.addfd(m_epollfd, m_pipefd[0], false, 0); // 将套接字对中的读端添加到epoll实例中，传入epoll文件描述符、套接字文件描述符、是否使用EPOLLONESHOT和触发模式
+
+    utils.addsig(SIGPIPE, SIG_IGN); // 忽略SIGPIPE信号，防止写入已关闭的套接字时程序崩溃
+    utils.addsig(SIGALRM, utils.sig_handler, false); // 设置SIGALRM信号的处理函数，传入信号编号、处理函数和是否重启系统调用
+    utils.addsig(SIGTERM, utils.sig_handler, false); // 设置SIGTERM信号的处理函数，传入信号编号、处理函数和是否重启系统调用
+
+    alarm(utils.m_TIMESLOT); // 设置定时器，传入定时器时间间隔
+
+    Utils::u_epollfd = m_epollfd; // 将epoll文件描述符赋值给Utils类的静态成员变量，供Utils类使用
+    Utils::u_pipefd = m_pipefd; // 将套接字文件描述符数组赋值给Utils类的静态成员变量，供Utils类使用
 }
 

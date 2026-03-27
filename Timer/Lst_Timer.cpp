@@ -30,7 +30,7 @@ void Sort_Timer_List::add_timer(Util_Timer* timer) {
     add_timer(timer, head);
 }
 
-void Sort_Timer_Sort::adjust_timer(Util_Timer* timer) {
+void Sort_Timer_List::adjust_timer(Util_Timer* timer) {
     if(!timer) return;
 
     Util_Timer* temp = timer -> next;
@@ -173,13 +173,13 @@ void Utils::show_error(int connfd, const char *info) {
 }
 
 int* Utils::u_pipefd = 0;
-int Utils::m_epollfd = 0;
+int Utils::u_epollfd = 0;
 
 class Utils; // 前向声明，避免编译错误
 
 void cb_func(Client_Data* user_data) {
-    epoll_ctl(Utils::m_epollfd, EPOLL_CTL_DEL, user_data -> sockfd, 0);
+    epoll_ctl(Utils::u_epollfd, EPOLL_CTL_DEL, user_data -> sockfd, 0);
     assert(user_data); // 断言，确保user_data不为NULL
     close(user_data -> sockfd);
-    http_conn::m_user_count--;
+    Http_Conn::m_user_count--;
 }
