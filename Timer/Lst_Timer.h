@@ -26,15 +26,13 @@
 
 class Util_Timer;
 
-struct Client_Data
-{
+struct Client_Data {
     sockaddr_in address;
     int sockfd;
     Util_Timer* timer;
 };
 
-class Util_Timer
-{
+class Util_Timer {
 public:
     Util_Timer() : prev(NULL), next(NULL) {}
 
@@ -46,8 +44,7 @@ public:
     Util_Timer* next; // 指向后一个定时器
 };
 
-class Sort_Timer_List
-{
+class Sort_Timer_List {
 public:
     Sort_Timer_List();
     ~Sort_Timer_List();
@@ -65,8 +62,7 @@ private:
 };
 
 // 工具类，包含一些工具函数
-class Utils 
-{
+class Utils {
 public:
     Utils() {}
     ~Utils() {}
