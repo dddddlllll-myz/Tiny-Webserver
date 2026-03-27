@@ -12,8 +12,8 @@
 #include <cassert>
 #include <sys/epoll.h>
 
-#include "../Thread_Pool/Thread_Pool.h"
-#include "../Http/Http_Conn.h"
+#include "Thread_Pool/Thread_Pool.h"
+#include "Http/Http_Conn.h"
 
 const int MAX_FD = 65536;           //最大文件描述符
 const int MAX_EVENT_NUMBER = 10000; //最大事件数
@@ -21,8 +21,8 @@ const int TIMESLOT = 5;             //最小超时单位
 
 class Webserver {
 public:
-    WebServer();
-    ~WebServer();
+    Webserver();
+    ~Webserver();
 
     void init(int port , string user, string passWord, string databaseName,
               int log_write , int opt_linger, int trigmode, int sql_num,
@@ -62,7 +62,7 @@ public:
     int m_sql_num;
 
     //线程池相关
-    Thread_Pool* m_pool;
+    Thread_Pool<Http_Conn>* m_pool;
     int m_thread_num;
 
     //epoll_event相关

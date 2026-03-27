@@ -6,7 +6,7 @@
 #include <exception>
 #include <pthread.h>
 #include "../Lock/Lock.h"
-#include "../CGI_Mysql/Sql_Conn_Pool.h"
+#include "../CGI_MySql/Sql_Conn_Pool.h"
 
 template <typename T>
 class Thread_Pool {

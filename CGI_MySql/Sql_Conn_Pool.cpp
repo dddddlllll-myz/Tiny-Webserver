@@ -111,7 +111,7 @@ Conn_Pool::~Conn_Pool() {
 
 ConnectionRAII::ConnectionRAII(MYSQL **con, Conn_Pool *pool) {
     *con = pool -> GetConn(); // 获取连接
-    conRAII = *con; // 保存获取的连接
+    connRAII = *con; // 保存获取的连接
     poolRAII = pool; // 保存连接池指针
 }
 
