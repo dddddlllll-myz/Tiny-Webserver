@@ -136,3 +136,196 @@ void Webserver::eventListen() {
     Utils::u_pipefd = m_pipefd; // 将套接字文件描述符数组赋值给Utils类的静态成员变量，供Utils类使用
 }
 
+void Webserver::timer(int connfd, struct sockaddr_in client_address) {
+    users[connfd].init(connfd, client_address, m_root, m_CONNTrigmode, m_close_log, m_user, m_passWord, m_databaseName);
+
+    users_timer[connfd].address = client_address;
+    users_timer[connfd].sockfd = connfd;
+    Util_Timer* timer = new Util_Timer;
+    timer -> user_data = &users_timer[connfd];
+    timer -> cb_func = cb_func;
+    time_t cur = time(NULL);
+    timer -> expire = cur + 3 * TIMESLOT; // 设置定时器的超时时间为当前时间加上3倍的定时器时间间隔
+    users_timer[connfd].timer = timer;
+    utils.m_timer_lst.add_timer(timer); // 将定时器添加到定时器链表中
+}
+
+//若有数据传输，则将定时器往后延迟3个单位
+//并对新的定时器在链表上的位置进行调整
+void Webserver::adjust_timer(Util_Timer* timer) {
+    time_t cur = time(NULL);
+    timer -> expire = cur + 3 * TIMESLOT; // 将定时器的超时时间重新设置为当前时间加上3倍的定时器时间间隔
+    utils.m_timer_lst.adjust_timer(timer); // 调整定时器在链表上的位置
+
+    LOG_INFO("%s", "adjust timer once"); // 输出日志，表示调整定时器一次
+}
+
+void Webserver::deal_timer(Util_Timer* timer, int sockfd) {
+    timer -> cb_func(&users_timer[sockfd]); // 调用定时器的回调函数，传入定时器的用户数据
+    if(timer) {
+        utils.m_timer_lst.del_timer(timer); // 从定时器链表中删除定时器
+    }
+
+    LOG_INFO("close fd %d", sockfd); // 输出日志，表示关闭文件描述符
+}
+
+bool Webserver::dealclientdata() {
+    struct sockaddr_in client_address;
+    socklen_t client_addrlength = sizeof(client_address);
+    if(m_LISTENTrigmode == 0) { // LT
+        int connfd = accept(m_listenfd, (struct sockaddr *)&client_address, &client_addrlength);
+        if(connfd < 0) {
+            LOG_ERROR("%s:errno is %d", "accept error", errno);
+            return false;
+        }
+
+        if(Http_Conn::m_user_count >= MAX_FD) {
+            utils.show_error(connfd, "Internal server busy");
+            LOG_ERROR("%s", "Internal server busy");
+            return false;
+        }
+        timer(connfd, client_address);
+    }
+    else {
+        while(1) {
+            int connfd = accept(m_listenfd, (struct sockaddr *)&client_address, &client_addrlength);
+            if(connfd < 0) {
+                LOG_ERROR("%s:errno is %d", "accept error", errno);
+                break;
+            }
+
+            if(Http_Conn::m_user_count >= MAX_FD) {
+                utils.show_error(connfd, "Internal server busy");
+                LOG_ERROR("%s", "Internal server busy");
+                break;
+            }
+            timer(connfd, client_address);
+        }
+        return false;
+    }
+    return true;
+}
+
+bool Webserver::dealwithsignal(bool& timeout, bool& stop_server) {
+    int sig;
+    char signals[1024];
+    int res = recv(m_pipefd[0], signals, sizeof(signals), 0);
+    if(res <= 0) return false;
+    else {
+        for(int i = 0; i < res; ++i) {
+            switch(signals[i]) {
+                case SIGALRM: {
+                    timeout = true;
+                    break;
+                }
+                case SIGTERM: {
+                    stop_server = true;
+                    break;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+void Webserver::dealwithread(int sockfd) {
+    Util_Timer* timer = users_timer[sockfd].timer;
+
+    if(m_actormodel == 1) { //Reactor
+        if(timer) adjust_timer(timer);
+
+        //若监测到读事件，将该事件放入请求队列
+        m_pool -> append(users + sockfd, 0);
+
+        while(1) {
+            if(users[sockfd].improv == 1) {
+                if(users[sockfd].timer_flag == 1) {
+                    deal_timer(timer, sockfd);
+                    users[sockfd].timer_flag = 0;
+                }
+                users[sockfd].improv = 0;
+                break;
+            }
+        }
+    }
+    else {
+        if(users[sockfd].read_once()) {
+            LOG_INFO("deal with the client(%s)", inet_ntoa(users[sockfd].get_address() -> sin_addr));
+            m_pool -> append_p(users + sockfd); // 将读事件放入请求队列
+            if(timer) adjust_timer(timer); // 调整定时器
+        }
+        else {
+            deal_timer(timer, sockfd);
+        }
+    }
+}
+
+void Webserver::dealwithwrite(int sockfd) {
+    Util_Timer* timer = users_timer[sockfd].timer;
+
+    if(m_actormodel == 1) { //Reactor
+        if(timer) adjust_timer(timer);
+
+        m_pool -> append(users + sockfd, 1); // 将写事件放入请求队列
+
+        while(1) {
+            if(users[sockfd].improv == 1) {
+                if(users[sockfd].timer_flag == 1) {
+                    deal_timer(timer, sockfd);
+                    users[sockfd].timer_flag = 0;
+                }
+                users[sockfd].improv = 0;
+                break;
+            }
+        }
+    }
+    else {
+        if(users[sockfd].write()) {
+            LOG_INFO("send data to the client(%s)", inet_ntoa(users[sockfd].get_address() -> sin_addr));
+            if(timer) adjust_timer(timer);
+        }
+        else {
+            deal_timer(timer, sockfd);
+        }
+    }
+}
+
+void Webserver::eventLoop() {
+    bool timeout = false;
+    bool stop_server = false;
+
+    while(!stop_server) {
+        int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
+        if(number < 0 && errno != EINTR) {
+            LOG_ERROR("%s:errno is %d", "epoll failure", errno);
+            break;
+        }
+
+        for(int i = 0; i < number; ++i) {
+            int sockfd = events[i].data.fd;
+            if(sockfd == m_listenfd) {
+                bool flag = dealclientdata();
+                if(flag == false) continue;
+            }
+            else if(events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
+                Util_Timer* timer = users_timer[sockfd].timer;
+                deal_timer(timer, sockfd);
+            }
+            else if((events[i].events & EPOLLIN) && (events[i].data.fd == m_pipefd[0])) {
+                bool flag = dealwithsignal(timeout, stop_server);
+                if(flag == false) LOG_ERROR("%s", "deal with signal failure");
+            }
+            else if(events[i].events & EPOLLIN) {
+                dealwithread(sockfd);
+            }
+            else if(events[i].events & EPOLLOUT) {
+                dealwithwrite(sockfd);
+            }
+        }
+
+        if(timeout) {
+            utils.timer_handler(); // 处理定时器事件，重新定时以不断触发SIGALRM信号
+            timeout = false;
+        }
+    }
+}

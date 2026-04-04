@@ -177,7 +177,7 @@ int Utils::u_epollfd = 0;
 
 class Utils; // 前向声明，避免编译错误
 
-void cb_func(Client_Data* user_data) {
+void cb_func(Client_Data* user_data) {// 定时器的回调函数，删除非活动连接在epoll中的注册，并关闭连接，释放资源
     epoll_ctl(Utils::u_epollfd, EPOLL_CTL_DEL, user_data -> sockfd, 0);
     assert(user_data); // 断言，确保user_data不为NULL
     close(user_data -> sockfd);

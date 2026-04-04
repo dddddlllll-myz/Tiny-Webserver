@@ -116,7 +116,7 @@ void Http_Conn::init(int sockfd, const sockaddr_in &addr, char *root, int TRIGMo
 
 //初始化新接受的连接
 //check_state默认为分析请求行状态
-void Http_Comm::init() {
+void Http_Conn::init() {
     mysql = NULL;
     bytes_to_send = 0;
     bytes_have_send = 0;
@@ -131,7 +131,7 @@ void Http_Comm::init() {
     m_checked_idx = 0;
     m_read_idx = 0;
     m_write_idx = 0;
-    m_cgi = 0;
+    cgi = 0;
     m_state = 0;
     timer_flag = 0;
     improv = 0;
@@ -208,7 +208,7 @@ Http_Conn::HTTP_CODE Http_Conn::parse_request_line(char* text) {
     if(strcasecmp(method, "GET") == 0) m_method = GET;
     else if(strcasecmp(method, "POST") == 0) {
         m_method = POST;
-        m_cgi = 1; //POST请求需要解析请求体，且请求体中包含用户提交的数据
+        cgi = 1; //POST请求需要解析请求体，且请求体中包含用户提交的数据
     }
     else return BAD_REQUEST;
 
@@ -221,12 +221,12 @@ Http_Conn::HTTP_CODE Http_Conn::parse_request_line(char* text) {
 
     if(strcasecmp(m_version, "HTTP/1.1") != 0) return BAD_REQUEST;
 
-    if(strcasecmp(m_url, "http://", 7) == 0) {
+    if(strncasecmp(m_url, "http://", 7) == 0) {
         m_url += 7;
         m_url = strchr(m_url, '/'); //strchr函数会返回字符串m_url中第一次出现字符'/'的位置
     }
 
-    if(strcasecmp(m_url, "https://", 8) == 0) {
+    if(strncasecmp(m_url, "https://", 8) == 0) {
         m_url += 8;
         m_url = strchr(m_url, '/'); //strchr函数会返回字符串m_url中第一次出现字符'/'的位置
     }
@@ -243,7 +243,7 @@ Http_Conn::HTTP_CODE Http_Conn::parse_request_line(char* text) {
 Http_Conn::HTTP_CODE Http_Conn::parse_headers(char* text) {
     if(text[0] == '\0') { //如果遇到一个空行，说明请求头部字段解析完毕
         if(m_content_length != 0) {
-            m_chech_state = CHECK_STATE_CONTENT; //主状态机检查状态变为检查请求体
+            m_check_state = CHECK_STATE_CONTENT; //主状态机检查状态变为检查请求体
             return NO_REQUEST; //HTTP请求还不完整，需要继续读取客户数据才能得到完整的HTTP请求
         }
         return GET_REQUEST; //HTTP请求完整，准备响应客户请求
@@ -466,7 +466,7 @@ bool Http_Conn::write() {
     }
 }
 
-bool Http_Conn::add_response(char* format, ...) { // 往响应报头中添加数据，format是响应报头的格式，...是可变参数，可以根据format的格式传入不同数量和类型的参数
+bool Http_Conn::add_response(const char* format, ...) { // 往响应报头中添加数据，format是响应报头的格式，...是可变参数，可以根据format的格式传入不同数量和类型的参数
     if(m_write_idx >= WRITE_BUFFER_SIZE) return false;
 
     va_list arg_list;
