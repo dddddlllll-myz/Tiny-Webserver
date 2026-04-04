@@ -307,11 +307,11 @@ void Webserver::eventLoop() {
                 bool flag = dealclientdata();
                 if(flag == false) continue;
             }
-            else if(events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
+            else if(events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) { // 服务器端关闭连接，或者对方异常断开连接，或者发生错误
                 Util_Timer* timer = users_timer[sockfd].timer;
                 deal_timer(timer, sockfd);
             }
-            else if((events[i].events & EPOLLIN) && (events[i].data.fd == m_pipefd[0])) {
+            else if((events[i].events & EPOLLIN) && (events[i].data.fd == m_pipefd[0])) { // 处理信号事件,如果是读事件，并且事件发生在管道的读端,说明有信号到来
                 bool flag = dealwithsignal(timeout, stop_server);
                 if(flag == false) LOG_ERROR("%s", "deal with signal failure");
             }
