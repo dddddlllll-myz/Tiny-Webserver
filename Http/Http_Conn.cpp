@@ -30,10 +30,10 @@ void Http_Conn::initmysql_result(Conn_Pool* connPool) {
 
     //从表中检索完整的结果集
     MYSQL_RES *result = mysql_store_result(mysql);
-    if(result == nullptr) {
-        LOG_ERROR("SELECT error:%s\n", mysql_error(mysql));
-        return;
-    }
+    if(result == nullptr) {                                                                                                                                                                                                             
+      LOG_ERROR("mysql_store_result error:%s\n", mysql_error(mysql));                                                                                                                                                                 
+      return;                                                                                                                                                                                                                         
+    }       
 
     //返回结果集中的列数
     int num_fields = mysql_num_fields(result);
