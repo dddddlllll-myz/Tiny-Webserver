@@ -1,0 +1,8 @@
+server
+*.o
+*.log
+.git/
+root/
+bin/
+obj/
+*.tar.gz
