@@ -7,7 +7,7 @@ using namespace std;
 
 class Config {
 public:
-    Config() {}
+    Config();
     ~Config() {}
 
     void parse_arg(int argc, char* argv[]); // 解析命令行参数，设置服务器的相关参数

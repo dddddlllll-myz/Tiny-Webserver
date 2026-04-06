@@ -25,10 +25,15 @@ void Http_Conn::initmysql_result(Conn_Pool* connPool) {
     //在user表中检索username，passwd数据，浏览器端输入
     if(mysql_query(mysql, "SELECT username,passwd FROM user")) {
         LOG_ERROR("SELECT error:%s\n", mysql_error(mysql));
+        return;
     }
 
     //从表中检索完整的结果集
     MYSQL_RES *result = mysql_store_result(mysql);
+    if(result == nullptr) {
+        LOG_ERROR("SELECT error:%s\n", mysql_error(mysql));
+        return;
+    }
 
     //返回结果集中的列数
     int num_fields = mysql_num_fields(result);
@@ -42,6 +47,8 @@ void Http_Conn::initmysql_result(Conn_Pool* connPool) {
         string temp2(row[1]);
         users[temp1] = temp2;
     }
+
+    mysql_free_result(result); //释放结果集占用的内存
 }
 
 //对文件描述符设置非阻塞

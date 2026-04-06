@@ -56,6 +56,8 @@ bool Log::init(const char *file_name, int close_log, int log_buf_size, int split
 }
 
 void Log::write_log(int level, const char* format, ...) {
+    if(!m_fp) return;
+    
     struct timeval now = {0, 0};
     gettimeofday(&now, nullptr); //获取当前时间，精确到微秒
     time_t t = now.tv_sec; //获取当前时间的秒数部分
@@ -90,6 +92,8 @@ void Log::write_log(int level, const char* format, ...) {
             snprintf(new_log_full_name, 255, "%s%s%s.%lld", dir_name, tail, log_name, m_count / m_split_lines);
         }
         m_fp = fopen(new_log_full_name, "a"); //以追加的方式打开新的日志文件，如果文件不存在则创建
+
+        if(!m_fp) return;
     }
 
     m_mutex.unlock();

@@ -6,7 +6,7 @@ Webserver::Webserver() {
     //root文件夹路径
     char server_path[200];
     getcwd(server_path, 200); //获取当前工作目录，存储在server_path中
-    char root[6] = "/root";
+    char root[6] = "/Root";
     m_root = (char *)malloc(strlen(server_path) + strlen(root) + 1);
     strcpy(m_root, server_path);
     strcat(m_root, root);
