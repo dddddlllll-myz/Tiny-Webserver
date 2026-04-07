@@ -147,7 +147,7 @@ void Webserver::timer(int connfd, struct sockaddr_in client_address) {
     time_t cur = time(NULL);
     timer -> expire = cur + 3 * TIMESLOT; // 设置定时器的超时时间为当前时间加上3倍的定时器时间间隔
     users_timer[connfd].timer = timer;
-    utils.m_timer_lst.add_timer(timer); // 将定时器添加到定时器链表中
+    utils.m_timer_heap.add_timer(timer); // 将定时器添加到定时器链表中
 }
 
 //若有数据传输，则将定时器往后延迟3个单位
@@ -155,7 +155,7 @@ void Webserver::timer(int connfd, struct sockaddr_in client_address) {
 void Webserver::adjust_timer(Util_Timer* timer) {
     time_t cur = time(NULL);
     timer -> expire = cur + 3 * TIMESLOT; // 将定时器的超时时间重新设置为当前时间加上3倍的定时器时间间隔
-    utils.m_timer_lst.adjust_timer(timer); // 调整定时器在链表上的位置
+    utils.m_timer_heap.adjust_timer(timer); // 调整定时器在链表上的位置
 
     LOG_INFO("%s", "adjust timer once"); // 输出日志，表示调整定时器一次
 }
@@ -163,7 +163,7 @@ void Webserver::adjust_timer(Util_Timer* timer) {
 void Webserver::deal_timer(Util_Timer* timer, int sockfd) {
     timer -> cb_func(&users_timer[sockfd]); // 调用定时器的回调函数，传入定时器的用户数据
     if(timer) {
-        utils.m_timer_lst.del_timer(timer); // 从定时器链表中删除定时器
+        utils.m_timer_heap.del_timer(timer); // 从定时器链表中删除定时器
     }
 
     LOG_INFO("close fd %d", sockfd); // 输出日志，表示关闭文件描述符

@@ -14,6 +14,7 @@
 
 #include "Thread_Pool/Thread_Pool.h"
 #include "Http/Http_Conn.h"
+#include "Timer/Timer_Heap.h"
 
 const int MAX_FD = 65536;           //最大文件描述符
 const int MAX_EVENT_NUMBER = 10000; //最大事件数
