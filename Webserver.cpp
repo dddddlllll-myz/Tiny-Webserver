@@ -25,7 +25,7 @@ Webserver::~Webserver() {
     delete m_pool;
 }
 
-void Webserver::init(int port, string user, string passWord, string databaseName, int log_write, 
+void Webserver::init(int port, string user, string passWord, string databaseName, int log_write,
                      int opt_linger, int trigmode, int sql_num, int thread_num, int close_log, int actor_model)
 {
     m_port = port;
@@ -39,6 +39,7 @@ void Webserver::init(int port, string user, string passWord, string databaseName
     m_TRIGMode = trigmode;
     m_close_log = close_log;
     m_actormodel = actor_model;
+    m_worker_processes = 1; // 默认单进程
 }
 
 void Webserver::trig_mode() {
@@ -107,6 +108,10 @@ void Webserver::eventListen() {
 
     int flag = 1; // 设置套接字选项，SO_REUSEADDR表示允许重用本地地址和端口
     setsockopt(m_listenfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)); // 设置套接字选项
+
+    int reuseport = 1; // SO_REUSEPORT允许多个进程绑定同一端口，内核自动负载均衡
+    setsockopt(m_listenfd, SOL_SOCKET, SO_REUSEPORT, &reuseport, sizeof(reuseport));
+
     res = bind(m_listenfd, (struct sockaddr *)&address, sizeof(address)); // 绑定套接字，传入套接字文件描述符、地址结构体和地址结构体大小
     assert(res >= 0); // 断言，判断bind函数是否成功绑定套接字，如果失败则输出错误信息并终止程序
     res = listen(m_listenfd, 5); // 监听套接字，传入套接字文件描述符和监听队列长度
@@ -134,6 +139,47 @@ void Webserver::eventListen() {
 
     Utils::u_epollfd = m_epollfd; // 将epoll文件描述符赋值给Utils类的静态成员变量，供Utils类使用
     Utils::u_pipefd = m_pipefd; // 将套接字文件描述符数组赋值给Utils类的静态成员变量，供Utils类使用
+}
+
+void Webserver::fork_workers() {
+    for(int i = 0; i < m_worker_processes; ++i) {
+        pid_t pid = fork();
+        if(pid < 0) {
+            perror("fork failed");
+            exit(1);
+        }
+        if(pid == 0) { // 子进程
+            // 每个子进程有独立的epollfd
+            m_epollfd = epoll_create(5);
+            assert(m_epollfd != -1);
+            Http_Conn::m_epollfd = m_epollfd;
+
+            // 每个子进程有独立的信号管道
+            socketpair(PF_UNIX, SOCK_STREAM, 0, m_pipefd);
+            utils.setnonblocking(m_pipefd[1]);
+            Utils::u_epollfd = m_epollfd;
+            Utils::u_pipefd = m_pipefd;
+
+            // 重新注册监听socket和信号管道到新的epollfd
+            utils.addfd(m_epollfd, m_listenfd, false, m_LISTENTrigmode);
+            utils.addfd(m_epollfd, m_pipefd[0], false, 0);
+
+            // 每个子进程有独立的线程池
+            m_pool = new Thread_Pool<Http_Conn>(m_actormodel, m_connPool, m_thread_num);
+
+            // 忽略SIGTERM，让父进程处理
+            utils.addsig(SIGTERM, SIG_IGN, false);
+
+            // 子进程进入事件循环，不返回
+            eventLoop();
+            exit(0);
+        }
+        // 父进程继续fork下一个worker
+    }
+
+    // 父进程等待所有子进程
+    while(wait(NULL) > 0);
+    exit(0);
 }
 
 void Webserver::timer(int connfd, struct sockaddr_in client_address) {

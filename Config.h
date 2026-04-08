@@ -41,6 +41,9 @@ public:
 
     //并发模型选择
     int actor_model;
+
+    //worker进程数量
+    int worker_processes;
 };
 
 

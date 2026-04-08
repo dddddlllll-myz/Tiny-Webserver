@@ -14,6 +14,8 @@ int main(int argc, char* argv[]) {
     server.init(config.PORT, user, passwd, databasename, config.LOGWrite, config.OPT_LINGER,
                 config.TRIGMode, config.sql_num, config.thread_num, config.close_log, config.actor_model);
 
+    server.m_worker_processes = config.worker_processes; // 设置worker进程数量
+
     server.log_write(); // 日志系统初始化
 
     server.sql_pool(); // 数据库连接池初始化
@@ -24,7 +26,7 @@ int main(int argc, char* argv[]) {
 
     server.eventListen(); // 监听事件
 
-    server.eventLoop(); // 事件循环
+    server.fork_workers(); // fork worker进程，多进程模式
 
     return 0;
 }

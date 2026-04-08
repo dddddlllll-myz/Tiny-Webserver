@@ -13,7 +13,7 @@ make clean  # Remove the binary
 ## Running the Server
 
 ```bash
-./server -p 9006 -l 0 -m 0 -o 0 -s 8 -t 8 -c 0 -a 0
+./server -p 9006 -l 0 -m 0 -o 0 -s 8 -t 8 -c 0 -a 0 -w 4
 ```
 
 Command line arguments:
@@ -25,6 +25,7 @@ Command line arguments:
 - `-t` thread pool size (default 8)
 - `-c` close log: 0=no, 1=yes (default 0)
 - `-a` actor model: 0=proactor, 1=reactor (default 0)
+- `-w` worker processes: number of worker processes (default 1, use CPU cores for multi-process)
 
 ## Architecture
 

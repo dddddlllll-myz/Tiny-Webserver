@@ -35,6 +35,7 @@ public:
     void trig_mode();
     void eventListen();
     void eventLoop();
+    void fork_workers();
     void timer(int connfd, struct sockaddr_in client_address);
     void adjust_timer(Util_Timer *timer);
     void deal_timer(Util_Timer *timer, int sockfd);
@@ -70,6 +71,7 @@ public:
     epoll_event events[MAX_EVENT_NUMBER];
 
     int m_listenfd;
+    int m_worker_processes;  // worker进程数量
     int m_OPT_LINGER;
     int m_TRIGMode;
     int m_LISTENTrigmode;

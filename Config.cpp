@@ -30,11 +30,14 @@ Config::Config() {
 
     //并发模型,默认是proactor
     actor_model = 0;
+
+    //worker进程数量,默认1(单进程)
+    worker_processes = 1;
 }
 
 void Config::parse_arg(int argc, char* argv[]) {
     int opt;
-    const char *str = "p:l:m:o:s:t:c:a:";
+    const char *str = "p:l:m:o:s:t:c:a:w:";
     while((opt = getopt(argc, argv, str)) != -1) { // 使用getopt函数解析命令行参数，optind是全局变量，表示下一个要处理的参数在argv中的索引，optarg是全局变量，指向当前选项的参数值
         switch(opt) {
             case 'p': {
@@ -66,7 +69,11 @@ void Config::parse_arg(int argc, char* argv[]) {
                 break;
             }
             case 'a': {
-                actor_model = atoi(optarg); 
+                actor_model = atoi(optarg);
+                break;
+            }
+            case 'w': {
+                worker_processes = atoi(optarg);
                 break;
             }
             default: {
