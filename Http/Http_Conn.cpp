@@ -142,6 +142,7 @@ void Http_Conn::init() {
     m_state = 0;
     timer_flag = 0;
     improv = 0;
+    m_file_fd = -1;
 
     memset(m_read_buf, '\0', READ_BUFFER_SIZE);
     memset(m_write_buf, '\0', WRITE_BUFFER_SIZE);
@@ -413,17 +414,16 @@ Http_Conn::HTTP_CODE Http_Conn::do_request() {
 
     if(S_ISDIR(m_file_stat.st_mode)) return BAD_REQUEST; //如果请求资源的文件存在，但是一个目录，返回BAD_REQUEST
 
-    int fd = open(m_real_file, O_RDONLY); //以只读方式打开请求资源的文件，返回文件描述符
-    m_file_address = (char*)mmap(0, m_file_stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0); //将请求资源的文件映射到内存地址m_file_address，文件大小为m_file_stat.st_size，映射权限为只读，映射标志为私有，文件描述符为fd，映射偏移量为0
-    close(fd); //关闭文件描述符
+    m_file_fd = open(m_real_file, O_RDONLY); //以只读方式打开请求资源的文件，返回文件描述符
+    if(m_file_fd < 0) return NO_RESOURCE;
 
     return FILE_REQUEST; //请求资源的文件存在，且可以访问，返回FILE_REQUEST
 }
 
-void Http_Conn::unmap() {
-    if(m_file_address) {
-        munmap(m_file_address, m_file_stat.st_size); //解除文件映射
-        m_file_address = 0;
+void Http_Conn::close_file() {
+    if(m_file_fd >= 0) {
+        close(m_file_fd);
+        m_file_fd = -1;
     }
 }
 
@@ -437,39 +437,46 @@ bool Http_Conn::write() {
     }
 
     while(1) {
-        temp = writev(m_sockfd, m_iv, m_iv_count); // writev函数可以将多个非连续的内存块一次性写入到文件描述符中，m_iv是一个iovec结构体数组，m_iv_count是数组中元素的个数
+        // 第一阶段：发送响应头
+        if(bytes_have_send < m_write_idx) {
+            temp = send(m_sockfd, m_write_buf + bytes_have_send, m_write_idx - bytes_have_send, 0);
+            if(temp < 0) {
+                if(errno == EAGAIN) {
+                    modfd(m_epollfd, m_sockfd, EPOLLOUT, m_TRIGMode);
+                    return true;
+                }
+                close_file();
+                return false;
+            }
+            bytes_have_send += temp;
+            bytes_to_send -= temp;
+        }
+        // 第二阶段：通过sendfile发送文件内容（零拷贝）
+        else if(m_file_fd >= 0) {
+            off_t offset = 0;
+            temp = sendfile(m_sockfd, m_file_fd, &offset, bytes_to_send);
+            if(temp < 0) {
+                if(errno == EAGAIN) {
+                    modfd(m_epollfd, m_sockfd, EPOLLOUT, m_TRIGMode);
+                    return true;
+                }
+                close_file();
+                return false;
+            }
+            bytes_have_send += temp;
+            bytes_to_send -= temp;
+        }
 
-        if(temp < 0) {
-            if(errno == EAGAIN) { //如果TCP写缓冲区没有空间了，等待下一轮EPOLLOUT事件通知继续写数据
-                modfd(m_epollfd, m_sockfd, EPOLLOUT, m_TRIGMode);
+        if(bytes_to_send <= 0) { //如果响应报头和响应正文都发送完了
+            close_file();
+            modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode); //重新注册读事件，等待下一次客户请求
+
+            if(m_linger) { //如果HTTP请求使用长连接，初始化HTTP连接对象，准备下一次客户请求
+                init();
                 return true;
             }
-            unmap();
-            return false;
+            else return false; //如果HTTP请求不使用长连接，关闭HTTP连接
         }
-    }
-
-    bytes_have_send += temp;
-    bytes_to_send -= temp;
-    if(bytes_have_send >= m_iv[0].iov_len) { //如果已经发送了响应报头，接下来发送响应正文
-        m_iv[0].iov_len = 0; 
-        m_iv[1].iov_base = m_file_address + (bytes_have_send - m_write_idx);
-        m_iv[1].iov_len = bytes_to_send;
-    }
-    else { //如果还没有发送完响应报头，继续发送响应报头
-        m_iv[0].iov_base = m_write_buf + bytes_have_send;
-        m_iv[0].iov_len = m_iv[0].iov_len - bytes_have_send;
-    }
-
-    if(bytes_to_send <= 0) { //如果响应报头和响应正文都发送完了
-        unmap();
-        modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode); //重新注册读事件，等待下一次客户请求
-        
-        if(m_linger) { //如果HTTP请求使用长连接，初始化HTTP连接对象，准备下一次客户请求
-            init();
-            return true;
-        }
-        else return false; //如果HTTP请求不使用长连接，关闭HTTP连接
     }
 }
 
@@ -549,12 +556,7 @@ bool Http_Conn::process_write(HTTP_CODE res) { //根据HTTP请求的处理结果
             add_status_line(200, ok_200_title);
             if(m_file_stat.st_size != 0) {
                 add_headers(m_file_stat.st_size);
-                m_iv[0].iov_base = m_write_buf; //响应报头的起始位置
-                m_iv[0].iov_len = m_write_idx; //响应报头的长度
-                m_iv[1].iov_base = m_file_address; //响应正文的起始位置
-                m_iv[1].iov_len = m_file_stat.st_size; //响应正文的长度
-                m_iv_count = 2;
-                bytes_to_send = m_write_idx + m_file_stat.st_size;
+                bytes_to_send = m_write_idx; //响应头长度，文件内容通过sendfile发送
                 return true;
             }
             else { //如果请求的资源存在，但为空文件，响应报头和响应正文分开发送，响应正文内容为一个空的html文件
@@ -567,9 +569,6 @@ bool Http_Conn::process_write(HTTP_CODE res) { //根据HTTP请求的处理结果
             return false;
     }
 
-    m_iv[0].iov_base = m_write_buf; //响应报头的起始位置
-    m_iv[0].iov_len = m_write_idx; //响应报头的长度
-    m_iv_count = 1;
     bytes_to_send = m_write_idx;
 
     return true;

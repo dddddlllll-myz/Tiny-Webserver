@@ -15,11 +15,10 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/mman.h>
 #include <stdarg.h>
 #include <errno.h>
 #include <sys/wait.h>
-#include <sys/uio.h>
+#include <sys/sendfile.h>
 #include <map>
 
 #include "../Lock/Lock.h"
@@ -97,7 +96,7 @@ private:
     HTTP_CODE do_request();
     char *get_line() { return m_read_buf + m_start_line; };
     LINE_STATUS parse_line();
-    void unmap();
+    void close_file();
     bool add_response(const char *format, ...);
     bool add_content(const char *content);
     bool add_status_line(int status, const char *title);
@@ -130,10 +129,8 @@ private:
     char *m_host;
     long m_content_length;
     bool m_linger; // HTTP请求是否保持连接
-    char *m_file_address;
-    struct stat m_file_stat;
-    struct iovec m_iv[2]; // iovec结构体是一个描述内存块的结构体，包含一个指向内存块的指针和内存块的大小
-    int m_iv_count; // 采用writev来执行写操作，m_iv_count表示被写内存块的数量
+    struct stat m_file_stat;  // 文件信息 (st_size, st_mode等)
+    int m_file_fd;            // file descriptor for sendfile
     int cgi;        //是否启用的POST
     char *m_string; //存储请求头数据
     int bytes_to_send;
