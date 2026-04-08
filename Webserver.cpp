@@ -1,4 +1,5 @@
 #include "Webserver.h"
+#include <time.h>
 
 Webserver::Webserver() {
     users = new Http_Conn[MAX_FD];
@@ -128,7 +129,7 @@ void Webserver::eventListen() {
 
     res = socketpair(PF_UNIX, SOCK_STREAM, 0, m_pipefd); // 创建UNIX域套接字对，传入地址族、套接字类型、协议和套接字文件描述符数组
     assert(res != -1);
-    utils.setnonblocking(m_pipefd[1]); // 将套接字对中的写端设置为非阻塞
+    utils.setnonblocking(m_pipefd[1]); // 将套接字对中的写端设置为非阻塞 
     utils.addfd(m_epollfd, m_pipefd[0], false, 0); // 将套接字对中的读端添加到epoll实例中，传入epoll文件描述符、套接字文件描述符、是否使用EPOLLONESHOT和触发模式
 
     utils.addsig(SIGPIPE, SIG_IGN); // 忽略SIGPIPE信号，防止写入已关闭的套接字时程序崩溃
@@ -167,19 +168,60 @@ void Webserver::fork_workers() {
             // 每个子进程有独立的线程池
             m_pool = new Thread_Pool<Http_Conn>(m_actormodel, m_connPool, m_thread_num);
 
-            // 忽略SIGTERM，让父进程处理
-            utils.addsig(SIGTERM, SIG_IGN, false);
+            // 重新设置SIGTERM handler：让SIGTERM写入pipe，由dealwithsignal处理
+            //（因为fork继承的是parent_sigterm_handler，不写入pipe）
+            utils.addsig(SIGTERM, utils.sig_handler, false);
 
             // 子进程进入事件循环，不返回
             eventLoop();
             exit(0);
         }
-        // 父进程继续fork下一个worker
+        // 父进程记录worker PID
+        m_worker_pids.push_back(pid);
     }
 
-    // 父进程等待所有子进程
-    while(wait(NULL) > 0);
-    exit(0);
+    // 父进程：监控子进程，支持优雅关闭
+    while(true) {
+        // 检查优雅关闭标志
+        if(gGracefulShutdown) {
+            printf("parent: initiating graceful shutdown...\n");
+            // 向所有worker发送SIGTERM
+            for(pid_t pid : m_worker_pids) {
+                printf("parent: sending SIGTERM to worker %d\n", pid);
+                kill(pid, SIGTERM);
+            }
+            // 等待所有worker退出
+            int status;
+            while(waitpid(-1, &status, 0) > 0) {
+                if(WIFEXITED(status)) {
+                    printf("parent: worker exited with code %d\n", WEXITSTATUS(status));
+                } 
+                else printf("parent: worker crashed\n");
+            }
+            printf("parent: all workers exited, parent exiting\n");
+            exit(0);
+        }
+
+        int status;
+        pid_t pid = waitpid(-1, &status, WNOHANG);  // 非阻塞等待
+        if(pid < 0) {
+            if(errno == ECHILD) {
+                // 没有子进程了，父进程退出
+                printf("all workers exited, parent exiting\n");
+                exit(0);
+            }
+            perror("waitpid failed");
+            exit(1);
+        }
+        if(pid > 0) {
+            // 某个worker退出了
+            if(WIFEXITED(status)) {
+                printf("worker %d exited normally with code %d\n",
+                       pid, WEXITSTATUS(status));
+            } 
+            else printf("worker %d crashed\n", pid);
+        }
+    }
 }
 
 void Webserver::timer(int connfd, struct sockaddr_in client_address) {
@@ -339,6 +381,7 @@ void Webserver::dealwithwrite(int sockfd) {
 void Webserver::eventLoop() {
     bool timeout = false;
     bool stop_server = false;
+    time_t graceful_start = 0;  // 记录优雅关闭开始时间
 
     while(!stop_server) {
         int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
@@ -347,11 +390,22 @@ void Webserver::eventLoop() {
             break;
         }
 
+        // 检查优雅关闭超时
+        if(graceful_start > 0) {
+            time_t now = time(NULL);
+            if(difftime(now, graceful_start) > GRACEFUL_SHUTDOWN_TIMEOUT) {
+                printf("graceful shutdown timeout, forcing exit\n");
+                break;
+            }
+        }
+
         for(int i = 0; i < number; ++i) {
             int sockfd = events[i].data.fd;
             if(sockfd == m_listenfd) {
-                bool flag = dealclientdata();
-                if(flag == false) continue;
+                if(graceful_start == 0) {  // 正常模式下接受新连接
+                    bool flag = dealclientdata();
+                    if(flag == false) continue;
+                }
             }
             else if(events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) { // 服务器端关闭连接，或者对方异常断开连接，或者发生错误
                 Util_Timer* timer = users_timer[sockfd].timer;
@@ -360,6 +414,14 @@ void Webserver::eventLoop() {
             else if((events[i].events & EPOLLIN) && (events[i].data.fd == m_pipefd[0])) { // 处理信号事件,如果是读事件，并且事件发生在管道的读端,说明有信号到来
                 bool flag = dealwithsignal(timeout, stop_server);
                 if(flag == false) LOG_ERROR("%s", "deal with signal failure");
+                if(stop_server && graceful_start == 0) {
+                    // 收到SIGTERM，开始优雅关闭
+                    graceful_start = time(NULL);
+                    // 移除监听socket，不再接受新连接
+                    epoll_ctl(m_epollfd, EPOLL_CTL_DEL, m_listenfd, NULL);
+                    printf("worker %d: starting graceful shutdown, will exit in %d seconds or when all connections close\n",
+                           getpid(), GRACEFUL_SHUTDOWN_TIMEOUT);
+                }
             }
             else if(events[i].events & EPOLLIN) {
                 dealwithread(sockfd);
@@ -372,6 +434,12 @@ void Webserver::eventLoop() {
         if(timeout) {
             utils.timer_handler(); // 处理定时器事件，重新定时以不断触发SIGALRM信号
             timeout = false;
+        }
+
+        // 如果正在优雅关闭且没有活跃连接了，可以立即退出
+        if(graceful_start > 0 && Http_Conn::m_user_count == 0) {
+            printf("all connections closed, exiting gracefully\n");
+            break;
         }
     }
 }

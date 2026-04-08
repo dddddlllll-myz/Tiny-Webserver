@@ -10,7 +10,12 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <cassert>
+#include <signal.h>
+
+// 父进程优雅关闭标志（定义在main.cpp）
+extern volatile sig_atomic_t gGracefulShutdown;
 #include <sys/epoll.h>
+#include <vector>
 
 #include "Thread_Pool/Thread_Pool.h"
 #include "Http/Http_Conn.h"
@@ -19,6 +24,7 @@
 const int MAX_FD = 65536;           //最大文件描述符
 const int MAX_EVENT_NUMBER = 10000; //最大事件数
 const int TIMESLOT = 5;             //最小超时单位
+const int GRACEFUL_SHUTDOWN_TIMEOUT = 30;  // 优雅关闭超时（秒）
 
 class Webserver {
 public:
@@ -55,6 +61,7 @@ public:
     int m_pipefd[2];
     int m_epollfd;
     Http_Conn* users;
+    std::vector<pid_t> m_worker_pids;  // 存储所有worker进程PID
 
     //数据库相关
     Conn_Pool* m_connPool;
