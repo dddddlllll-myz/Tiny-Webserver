@@ -9,10 +9,10 @@ void parent_sigterm_handler(int sig) {
 }
 
 int main(int argc, char* argv[]) {
-    //需要修改的数据库信息,登录名,密码,库名
-    string user = "root";
-    string passwd = "myz800209";
-    string databasename = "myzdb";
+    //需要修改的数据库信息,登录名,密码,库名，从环境变量读取
+    string user = getenv("MYSQL_USER") ? getenv("MYSQL_USER") : "root";
+    string passwd = getenv("MYSQL_PASSWD") ? getenv("MYSQL_PASSWD") : "";
+    string databasename = getenv("MYSQL_DB") ? getenv("MYSQL_DB") : "myzdb";
 
     //命令行解析
     Config config;
