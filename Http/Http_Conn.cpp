@@ -18,6 +18,7 @@ Lock m_lock;
 map<string, string> users;
 
 void Http_Conn::initmysql_result(Conn_Pool* connPool) {
+    m_connPool = connPool;
     //先从连接池中取一个连接
     MYSQL* mysql = connPool -> GetConn();
     ConnectionRAII mysqlconn(&mysql, connPool);
@@ -102,7 +103,7 @@ void Http_Conn::close_conn(bool real_close) {
     }
 }
 
-void Http_Conn::init(int sockfd, const sockaddr_in &addr, char *root, int TRIGMode, int close_log, string user, string passwd, string sqlname) {
+void Http_Conn::init(int sockfd, const sockaddr_in &addr, char *root, int TRIGMode, int close_log, string user, string passwd, string sqlname, Conn_Pool *connPool) {
     m_sockfd = sockfd;
     m_address = addr;
 
@@ -113,6 +114,7 @@ void Http_Conn::init(int sockfd, const sockaddr_in &addr, char *root, int TRIGMo
     doc_root = root;
     m_TRIGMode = TRIGMode;
     m_close_log = close_log;
+    m_connPool = connPool;
 
     strcpy(sql_user, user.c_str());
     strcpy(sql_passwd, passwd.c_str());
@@ -125,6 +127,7 @@ void Http_Conn::init(int sockfd, const sockaddr_in &addr, char *root, int TRIGMo
 //check_state默认为分析请求行状态
 void Http_Conn::init() {
     mysql = NULL;
+    m_connPool = NULL;
     bytes_to_send = 0;
     bytes_have_send = 0;
     m_check_state = CHECK_STATE_REQUESTLINE;
@@ -352,65 +355,75 @@ Http_Conn::HTTP_CODE Http_Conn::do_request() {
 
         if(flag == '3') {
             //如果是注册，先检测数据库中是否有重名的，没有重名的，进行增加数据
-            MYSQL_STMT *stmt = mysql_stmt_init(mysql);
-            if(!stmt) strcpy(m_url, "/registerError.html");
+            MYSQL *mysql = NULL;
+            ConnectionRAII mysqlconn(&mysql, m_connPool);
+            if(!mysql) { strcpy(m_url, "/registerError.html"); }
             else {
-                const char *insert_sql = "INSERT INTO user(username, passwd) VALUES(?, ?)";
-                if(mysql_stmt_prepare(stmt, insert_sql, strlen(insert_sql)) == 0) {
-                    MYSQL_BIND bind[2];
-                    memset(bind, 0, sizeof(bind));
-                    bind[0].buffer_type = MYSQL_TYPE_STRING;
-                    bind[0].buffer = name;
-                    bind[0].buffer_length = strlen(name);
-                    bind[1].buffer_type = MYSQL_TYPE_STRING;
-                    bind[1].buffer = password;
-                    bind[1].buffer_length = strlen(password);
-                    mysql_stmt_bind_param(stmt, bind);
-                    if(mysql_stmt_execute(stmt) == 0) {
-                        users.insert(pair<string, string>(name, password));
-                        strcpy(m_url, "/log.html");
-                    } 
+                MYSQL_STMT *stmt = mysql_stmt_init(mysql);
+                if(!stmt) strcpy(m_url, "/registerError.html");
+                else {
+                    const char *insert_sql = "INSERT INTO user(username, passwd) VALUES(?, ?)";
+                    if(mysql_stmt_prepare(stmt, insert_sql, strlen(insert_sql)) == 0) {
+                        MYSQL_BIND bind[2];
+                        memset(bind, 0, sizeof(bind));
+                        bind[0].buffer_type = MYSQL_TYPE_STRING;
+                        bind[0].buffer = name;
+                        bind[0].buffer_length = strlen(name);
+                        bind[1].buffer_type = MYSQL_TYPE_STRING;
+                        bind[1].buffer = password;
+                        bind[1].buffer_length = strlen(password);
+                        mysql_stmt_bind_param(stmt, bind);
+                        if(mysql_stmt_execute(stmt) == 0) {
+                            users.insert(pair<string, string>(name, password));
+                            strcpy(m_url, "/log.html");
+                        }
+                        else strcpy(m_url, "/registerError.html");
+                    }
                     else strcpy(m_url, "/registerError.html");
-                } 
-                else strcpy(m_url, "/registerError.html");
-                mysql_stmt_close(stmt);
+                    mysql_stmt_close(stmt);
+                }
             }
         }
         else if(flag == '2') {
             //如果是登录，使用预处理语句查询
-            MYSQL_STMT *stmt = mysql_stmt_init(mysql);
-            if(!stmt) strcpy(m_url, "/logError.html");
+            MYSQL *mysql = NULL;
+            ConnectionRAII mysqlconn(&mysql, m_connPool);
+            if(!mysql) { strcpy(m_url, "/logError.html"); }
             else {
-                const char *select_sql = "SELECT passwd FROM user WHERE username = ?";
-                if(mysql_stmt_prepare(stmt, select_sql, strlen(select_sql)) == 0) {
-                    MYSQL_BIND bind[1];
-                    memset(bind, 0, sizeof(bind));
-                    bind[0].buffer_type = MYSQL_TYPE_STRING;
-                    bind[0].buffer = name;
-                    bind[0].buffer_length = strlen(name);
-                    mysql_stmt_bind_param(stmt, bind);
-                    if(mysql_stmt_execute(stmt) == 0) {
-                        mysql_stmt_store_result(stmt);
-                        char db_password[100] = {0};
-                        unsigned long length = 0;
-                        MYSQL_BIND res_bind;
-                        memset(&res_bind, 0, sizeof(res_bind));
-                        res_bind.buffer_type = MYSQL_TYPE_STRING;
-                        res_bind.buffer = db_password;
-                        res_bind.buffer_length = sizeof(db_password) - 1;
-                        res_bind.length = &length;
-                        mysql_stmt_bind_result(stmt, &res_bind);
-                        if(mysql_stmt_fetch(stmt) == 0) {
-                            if(strcmp(db_password, password) == 0) strcpy(m_url, "/welcome.html");
+                MYSQL_STMT *stmt = mysql_stmt_init(mysql);
+                if(!stmt) strcpy(m_url, "/logError.html");
+                else {
+                    const char *select_sql = "SELECT passwd FROM user WHERE username = ?";
+                    if(mysql_stmt_prepare(stmt, select_sql, strlen(select_sql)) == 0) {
+                        MYSQL_BIND bind[1];
+                        memset(bind, 0, sizeof(bind));
+                        bind[0].buffer_type = MYSQL_TYPE_STRING;
+                        bind[0].buffer = name;
+                        bind[0].buffer_length = strlen(name);
+                        mysql_stmt_bind_param(stmt, bind);
+                        if(mysql_stmt_execute(stmt) == 0) {
+                            mysql_stmt_store_result(stmt);
+                            char db_password[100] = {0};
+                            unsigned long length = 0;
+                            MYSQL_BIND res_bind;
+                            memset(&res_bind, 0, sizeof(res_bind));
+                            res_bind.buffer_type = MYSQL_TYPE_STRING;
+                            res_bind.buffer = db_password;
+                            res_bind.buffer_length = sizeof(db_password) - 1;
+                            res_bind.length = &length;
+                            mysql_stmt_bind_result(stmt, &res_bind);
+                            if(mysql_stmt_fetch(stmt) == 0) {
+                                if(strcmp(db_password, password) == 0) strcpy(m_url, "/welcome.html");
+                                else strcpy(m_url, "/logError.html");
+                            }
                             else strcpy(m_url, "/logError.html");
-                        } 
+                        }
                         else strcpy(m_url, "/logError.html");
-                    } 
+                    }
                     else strcpy(m_url, "/logError.html");
-                } 
-                else strcpy(m_url, "/logError.html");
-                
-                mysql_stmt_close(stmt);
+
+                    mysql_stmt_close(stmt);
+                }
             }
         }
     }

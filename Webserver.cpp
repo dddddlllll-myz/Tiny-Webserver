@@ -225,7 +225,7 @@ void Webserver::fork_workers() {
 }
 
 void Webserver::timer(int connfd, struct sockaddr_in client_address) {
-    users[connfd].init(connfd, client_address, m_root, m_CONNTrigmode, m_close_log, m_user, m_passWord, m_databaseName);
+    users[connfd].init(connfd, client_address, m_root, m_CONNTrigmode, m_close_log, m_user, m_passWord, m_databaseName, m_connPool);
 
     users_timer[connfd].address = client_address;
     users_timer[connfd].sockfd = connfd;
@@ -252,6 +252,7 @@ void Webserver::deal_timer(Util_Timer* timer, int sockfd) {
     timer -> cb_func(&users_timer[sockfd]); // 调用定时器的回调函数，传入定时器的用户数据
     if(timer) {
         utils.m_timer_heap.del_timer(timer); // 从定时器链表中删除定时器
+        users_timer[sockfd].timer = NULL; // 防止悬空指针
     }
 
     LOG_INFO("close fd %d", sockfd); // 输出日志，表示关闭文件描述符
@@ -419,6 +420,7 @@ void Webserver::eventLoop() {
                     graceful_start = time(NULL);
                     // 移除监听socket，不再接受新连接
                     epoll_ctl(m_epollfd, EPOLL_CTL_DEL, m_listenfd, NULL);
+                    close(m_listenfd);  // 关闭监听套接字
                     printf("worker %d: starting graceful shutdown, will exit in %d seconds or when all connections close\n",
                            getpid(), GRACEFUL_SHUTDOWN_TIMEOUT);
                 }

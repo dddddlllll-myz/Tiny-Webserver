@@ -72,7 +72,7 @@ public:
     ~Http_Conn() {}
 
 public:
-    void init(int sockfd, const sockaddr_in &addr, char *, int, int, string user, string passwd, string sqlname);
+    void init(int sockfd, const sockaddr_in &addr, char *, int, int, string user, string passwd, string sqlname, Conn_Pool *connPool);
     void close_conn(bool real_close = true);
     void process();
     bool read_once();
@@ -110,6 +110,7 @@ public:
     static int m_epollfd;
     static int m_user_count;
     MYSQL *mysql;
+    Conn_Pool *m_connPool;  // 数据库连接池指针
     int m_state;  //读为0, 写为1
 
 private:
