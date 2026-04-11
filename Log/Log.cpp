@@ -13,6 +13,10 @@ Log::Log() {
 }
 
 Log::~Log() {
+    if(m_is_async) {
+        m_log_queue->push(""); // 发送退出信号
+        pthread_join(m_tid, nullptr); // 等待异步写线程结束
+    }
     if(m_fp != nullptr) fclose(m_fp);
 }
 
@@ -21,9 +25,8 @@ bool Log::init(const char *file_name, int close_log, int log_buf_size, int split
     if(max_queue_size >= 1) { //如果设置了异步写日志，则创建阻塞队列
         m_is_async = true;
         m_log_queue = new Block_Queue<string>(max_queue_size);
-        pthread_t tid;
         //flush_log_thread为线程回调函数，创建线程异步写日志
-        pthread_create(&tid, nullptr, flush_log_thread, nullptr);
+        pthread_create(&m_tid, nullptr, flush_log_thread, nullptr);
     }
 
     m_close_log = close_log;

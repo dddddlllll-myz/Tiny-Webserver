@@ -166,6 +166,10 @@ int Utils::u_epollfd = 0;
 
 void cb_func(Client_Data* user_data) {
     if(!user_data) return;
+    // 检查是否已触发过，避免重复清理
+    if(user_data -> fired) return;
+    user_data -> fired = true;
+
     int sockfd = user_data -> sockfd;
     epoll_ctl(Utils::u_epollfd, EPOLL_CTL_DEL, sockfd, 0);
     if(sockfd >= 0) close(sockfd);  // 防止重复关闭

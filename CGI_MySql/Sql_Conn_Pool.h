@@ -45,6 +45,7 @@ private:
 	Lock lock;
 	list<MYSQL *> connList; //连接池
 	Semaphore reserve; //信号量，用于控制连接池的使用数量，线程安全
+    bool m_initialized; //初始化标志
 
 public:
 	std::string m_url;			 //主机地址

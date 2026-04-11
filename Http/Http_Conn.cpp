@@ -122,9 +122,7 @@ void Http_Conn::close_conn(bool real_close) {
         LOG_INFO("close connection: %d\n", m_sockfd);
         removefd(m_epollfd, m_sockfd);
         m_sockfd = -1;
-        m_lock.lock();
-        m_user_count--;
-        m_lock.unlock();
+        // 注意：m_user_count的递减在cb_func()中处理，以避免竞态
     }
 }
 
@@ -143,9 +141,12 @@ void Http_Conn::init(int sockfd, const sockaddr_in &addr, char *root, int TRIGMo
     m_close_log = close_log;
     m_connPool = connPool;
 
-    strcpy(sql_user, user.c_str());
-    strcpy(sql_passwd, passwd.c_str());
-    strcpy(sql_name, sqlname.c_str());
+    strncpy(sql_user, user.c_str(), sizeof(sql_user) - 1);
+    sql_user[sizeof(sql_user) - 1] = '\0';
+    strncpy(sql_passwd, passwd.c_str(), sizeof(sql_passwd) - 1);
+    sql_passwd[sizeof(sql_passwd) - 1] = '\0';
+    strncpy(sql_name, sqlname.c_str(), sizeof(sql_name) - 1);
+    sql_name[sizeof(sql_name) - 1] = '\0';
 
     init();
 }
@@ -274,7 +275,11 @@ Http_Conn::HTTP_CODE Http_Conn::parse_request_line(char* text) {
     // 防止路径遍历攻击
     if(is_path_traversal(m_url)) return BAD_REQUEST;
 
-    if(strlen(m_url) == 1) strcat(m_url, "judge.html"); //如果请求行中的目标url为"/"，则将目标url改为"/judge.html"
+    if(strlen(m_url) == 1) {
+        size_t len = strlen(m_url);
+        if(len + strlen("judge.html") < FILENAME_LEN) strcat(m_url, "judge.html");
+        else return BAD_REQUEST;
+    }
 
     m_check_state = CHECK_STATE_HEADER; //主状态机检查状态变为检查请求头
     return NO_REQUEST;
@@ -360,10 +365,10 @@ Http_Conn::HTTP_CODE Http_Conn::process_read() {
 int parse_user_credentials(const char* data, std::string& username, std::string& password) {
     if(!data) return -1;
 
-    // 查找 username= 和 password= 的位置
-    const char* username_start = strstr(data, "username=");
+    // 查找 user= 和 password= 的位置（HTML表单使用name="user"）
+    const char* username_start = strstr(data, "user=");
     if(!username_start) return -1;
-    username_start += 9; // 跳过 "username="
+    username_start += 5; // 跳过 "user=" (不是"username=")
 
     const char* password_start = strstr(data, "password=");
     if(!password_start) return -1;
@@ -429,12 +434,22 @@ Http_Conn::HTTP_CODE Http_Conn::do_request() {
                             bind[1].buffer_length = password.length();
                             mysql_stmt_bind_param(stmt, bind);
                             if(mysql_stmt_execute(stmt) == 0) {
-                                m_lock.lock();
-                                users[username] = password;
-                                m_lock.unlock();
-                                strcpy(m_url, "/welcome.html");
+                                // 检查是否真的插入成功（affected_rows > 0）
+                                if(mysql_stmt_affected_rows(stmt) > 0) {
+                                    m_lock.lock();
+                                    users[username] = password;
+                                    m_lock.unlock();
+                                    strcpy(m_url, "/welcome.html");
+                                }
+                                else {
+                                    LOG_ERROR("Register failed - duplicate username: %s", mysql_error(db_conn));
+                                    strcpy(m_url, "/registerError.html");
+                                }
                             }
-                            else strcpy(m_url, "/registerError.html");
+                            else {
+                                LOG_ERROR("Register execute failed: %s", mysql_stmt_error(stmt));
+                                strcpy(m_url, "/registerError.html");
+                            }
                         }
                         else {
                             strcpy(m_url, "/registerError.html");
@@ -452,6 +467,7 @@ Http_Conn::HTTP_CODE Http_Conn::do_request() {
                             mysql_stmt_bind_param(stmt, bind);
                             if(mysql_stmt_execute(stmt) == 0) {
                                 if(mysql_stmt_store_result(stmt) != 0) {
+                                    LOG_ERROR("Login store result failed: %s", mysql_error(db_conn));
                                     strcpy(m_url, "/logError.html");
                                 }
                                 else {
@@ -464,16 +480,30 @@ Http_Conn::HTTP_CODE Http_Conn::do_request() {
                                     res_bind.buffer_length = sizeof(db_password) - 1;
                                     res_bind.length = &length;
                                     mysql_stmt_bind_result(stmt, &res_bind);
-                                    if(mysql_stmt_fetch(stmt) == 0) {
+                                    int fetch_result = mysql_stmt_fetch(stmt);
+                                    if(fetch_result == 0) {
                                         if(strcmp(db_password, password.c_str()) == 0) {
                                             strcpy(m_url, "/welcome.html");
                                         }
-                                        else strcpy(m_url, "/logError.html");
+                                        else {
+                                            LOG_ERROR("Wrong password for user: %s", username.c_str());
+                                            strcpy(m_url, "/logError.html");
+                                        }
                                     }
-                                    else strcpy(m_url, "/logError.html");                                 
+                                    else if(fetch_result == MYSQL_NO_DATA) {
+                                        LOG_ERROR("User not found: %s", username.c_str());
+                                        strcpy(m_url, "/logError.html");
+                                    }
+                                    else {
+                                    LOG_ERROR("Login fetch failed: %s", mysql_stmt_error(stmt));
+                                        strcpy(m_url, "/logError.html");
+                                    }
                                 }
                             }
-                            else strcpy(m_url, "/logError.html");                          
+                            else {
+                                LOG_ERROR("Login execute failed: %s", mysql_stmt_error(stmt));
+                                strcpy(m_url, "/logError.html");
+                            }                          
                         }
                         else strcpy(m_url, "/logError.html");
                     }
@@ -538,7 +568,7 @@ bool Http_Conn::write() {
         }
         // 第二阶段：通过sendfile发送文件内容（零拷贝）
         else if(m_file_fd >= 0) {
-            off_t offset = 0;
+            off_t offset = bytes_have_send - m_write_idx; // 从已发送位置继续
             temp = sendfile(m_sockfd, m_file_fd, &offset, bytes_to_send);
             if(temp < 0) {
                 if(errno == EAGAIN) {
@@ -641,13 +671,14 @@ bool Http_Conn::process_write(HTTP_CODE res) { //根据HTTP请求的处理结果
             add_status_line(200, ok_200_title);
             if(m_file_stat.st_size != 0) {
                 add_headers(m_file_stat.st_size);
-                bytes_to_send = m_write_idx; //响应头长度，文件内容通过sendfile发送
+                bytes_to_send = m_write_idx + m_file_stat.st_size; //响应头长度+文件长度，文件内容通过sendfile发送
                 return true;
             }
-            else { //如果请求的资源存在，但为空文件，响应报头和响应正文分开发送，响应正文内容为一个空的html文件
+            else { //如果请求的资源存在，但为空文件，关闭文件描述符，不使用sendfile
                 const char* ok_string = "<html><body></body></html>";
                 add_headers(strlen(ok_string));
                 if(!add_content(ok_string)) return false;
+                close_file(); //关闭空文件的描述符，避免sendfile死循环
             }
         }
         default:

@@ -10,7 +10,7 @@
 
 using namespace std; 
 
-Conn_Pool::Conn_Pool() {
+Conn_Pool::Conn_Pool() : m_initialized(false) {
     m_CurrConn = 0;
     m_FreeConn = 0;
 }
@@ -33,7 +33,7 @@ void Conn_Pool::init(std::string url, std::string User, std::string PassWord, st
         con = mysql_init(con);
 
         if(con == NULL) {
-            LOG_ERROR("MySQL Error: %s", mysql_error(con));
+            LOG_ERROR("MySQL Error: %s", "mysql_init failed");
             exit(1);
         }
 
@@ -50,11 +50,13 @@ void Conn_Pool::init(std::string url, std::string User, std::string PassWord, st
 
     reserve = Semaphore(m_FreeConn); // 初始化信号量，值为连接池中的连接数量
     m_MaxConn = MaxConn;
+    m_initialized = true;
 }
 
 MYSQL* Conn_Pool::GetConn() { //获取数据库连接
     MYSQL* con = NULL;
 
+    if(!m_initialized) return NULL;
     if(connList.size() == 0) return NULL;
 
     reserve.wait(); // 等待信号量，确保有可用连接

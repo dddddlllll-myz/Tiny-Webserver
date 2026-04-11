@@ -32,6 +32,7 @@ struct Client_Data {
     sockaddr_in address;
     int sockfd;
     Util_Timer* timer;
+    bool fired; // 标记定时器是否已触发，避免重复清理
 };
 
 class Util_Timer {
