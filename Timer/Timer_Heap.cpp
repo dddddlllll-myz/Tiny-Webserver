@@ -1,6 +1,8 @@
 #include "Timer_Heap.h"
 #include "../Http/Http_Conn.h"
 
+extern Lock m_lock;
+
 Timer_Heap::Timer_Heap() {}
 
 Timer_Heap::~Timer_Heap() {
@@ -169,5 +171,7 @@ void cb_func(Client_Data* user_data) {
     if(sockfd >= 0) close(sockfd);  // 防止重复关闭
     user_data -> sockfd = -1;  // 标记为已关闭
     user_data -> timer = NULL;  // 防止悬空指针被二次使用
+    m_lock.lock();
     Http_Conn::m_user_count--;
+    m_lock.unlock();
 }

@@ -122,7 +122,9 @@ void Http_Conn::close_conn(bool real_close) {
         LOG_INFO("close connection: %d\n", m_sockfd);
         removefd(m_epollfd, m_sockfd);
         m_sockfd = -1;
+        m_lock.lock();
         m_user_count--;
+        m_lock.unlock();
     }
 }
 
@@ -131,7 +133,9 @@ void Http_Conn::init(int sockfd, const sockaddr_in &addr, char *root, int TRIGMo
     m_address = addr;
 
     addfd(m_epollfd, sockfd, true, TRIGMode);
+    m_lock.lock();
     m_user_count++;
+    m_lock.unlock();
 
     //当浏览器出现连接重置时，可能是网站根目录出错或http响应格式出错或者访问的文件中内容完全为空，导致浏览器无法解析，建议将根目录设置到网站根目录下，/home/xxx/xxx/root
     doc_root = root;
@@ -149,7 +153,7 @@ void Http_Conn::init(int sockfd, const sockaddr_in &addr, char *root, int TRIGMo
 //初始化新接受的连接
 //check_state默认为分析请求行状态
 void Http_Conn::init() {
-    mysql = NULL;
+    m_mysql = NULL;
     m_connPool = NULL;
     bytes_to_send = 0;
     bytes_have_send = 0;

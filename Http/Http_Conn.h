@@ -109,7 +109,7 @@ private:
 public:
     static int m_epollfd;
     static int m_user_count;
-    MYSQL *mysql;
+    MYSQL *m_mysql;  // 数据库连接（用于RAII）
     Conn_Pool *m_connPool;  // 数据库连接池指针
     int m_state;  //读为0, 写为1
 

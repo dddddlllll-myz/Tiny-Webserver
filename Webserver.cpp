@@ -24,6 +24,7 @@ Webserver::~Webserver() {
     delete[] users;
     delete[] users_timer;
     delete m_pool;
+    free(m_root);
 }
 
 void Webserver::init(int port, string user, string passWord, string databaseName, int log_write,
@@ -115,7 +116,7 @@ void Webserver::eventListen() {
 
     res = bind(m_listenfd, (struct sockaddr *)&address, sizeof(address)); // 绑定套接字，传入套接字文件描述符、地址结构体和地址结构体大小
     assert(res >= 0); // 断言，判断bind函数是否成功绑定套接字，如果失败则输出错误信息并终止程序
-    res = listen(m_listenfd, 5); // 监听套接字，传入套接字文件描述符和监听队列长度
+    res = listen(m_listenfd, 128); // 监听套接字，传入套接字文件描述符和监听队列长度
     assert(res >= 0); // 断言，判断listen函数是否成功监听套接字，如果失败则输出错误信息并终止程序
 
     utils.init(TIMESLOT); // 初始化工具类，传入定时器时间间隔

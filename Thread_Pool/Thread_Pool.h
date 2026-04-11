@@ -109,7 +109,7 @@ void Thread_Pool<T>::run() {
             if(request -> m_state == 0) { // read
                 if(request -> read_once()) { 
                     request -> improv = 1; // 标记读事件就绪
-                    ConnectionRAII mysqlcon(&request -> mysql, m_connPool); // 获取数据库连接
+                    ConnectionRAII mysqlcon(&request -> m_mysql, m_connPool); // 获取数据库连接
                     request -> process(); // 处理请求
                 }
                 else { // 读事件未就绪，标记定时器超时，等待下一次触发
@@ -126,7 +126,7 @@ void Thread_Pool<T>::run() {
             }
         }
         else { // Proactor
-            ConnectionRAII mysqlcon(&request -> mysql, m_connPool); // 获取数据库连接
+            ConnectionRAII mysqlcon(&request -> m_mysql, m_connPool); // 获取数据库连接
             request -> process(); // 处理请求
         }
     }

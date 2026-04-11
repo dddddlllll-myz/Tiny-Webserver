@@ -20,7 +20,7 @@ Conn_Pool* Conn_Pool::GetInstance() {
     return &connPool;
 }
 
-void Conn_Pool::init(string url, string User, string PassWord, string DataBaseName, int Port, int MaxConn, int close_log) {
+void Conn_Pool::init(std::string url, std::string User, std::string PassWord, std::string DataBaseName, int Port, int MaxConn, int close_log) {
     m_url = url;
     m_Port = Port;
     m_User = User;
