@@ -164,10 +164,10 @@ int Utils::u_epollfd = 0;
 
 void cb_func(Client_Data* user_data) {
     if(!user_data) return;
-    int sockfd = user_data->sockfd;
+    int sockfd = user_data -> sockfd;
     epoll_ctl(Utils::u_epollfd, EPOLL_CTL_DEL, sockfd, 0);
     if(sockfd >= 0) close(sockfd);  // 防止重复关闭
-    user_data->sockfd = -1;  // 标记为已关闭
-    user_data->timer = NULL;  // 防止悬空指针被二次使用
+    user_data -> sockfd = -1;  // 标记为已关闭
+    user_data -> timer = NULL;  // 防止悬空指针被二次使用
     Http_Conn::m_user_count--;
 }

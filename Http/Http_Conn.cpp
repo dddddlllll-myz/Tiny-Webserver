@@ -2,6 +2,7 @@
 
 #include <mysql/mysql.h>
 #include <fstream>
+#include <string>
 
 //定义http响应的一些状态信息
 const char *ok_200_title = "OK";
@@ -17,6 +18,26 @@ const char *error_500_form = "There was an unusual problem serving the request f
 Lock m_lock;
 map<string, string> users;
 
+// URL路由映射：路径标识符 -> HTML文件（仅静态页面）
+static const std::map<char, const char*> URL_ROUTES = {
+    {'0', "/register.html"},
+    {'1', "/log.html"},
+    {'5', "/picture.html"},
+    {'6', "/video.html"},
+    {'7', "/fans.html"}
+};
+
+// 检查URL是否包含路径遍历攻击模式
+static bool is_path_traversal(const char* url) {
+    if(!url) return true;
+    size_t len = strlen(url);
+    // 检查 .. 或 . 后跟 / 或 \ 或 null
+    for(size_t i = 0; i + 1 < len; ++i) {
+        if(url[i] == '.' && (url[i + 1] == '.' || url[i + 1] == '/')) return true;
+    }
+    return false;
+}
+
 void Http_Conn::initmysql_result(Conn_Pool* connPool) {
     m_connPool = connPool;
     //先从连接池中取一个连接
@@ -31,10 +52,10 @@ void Http_Conn::initmysql_result(Conn_Pool* connPool) {
 
     //从表中检索完整的结果集
     MYSQL_RES *result = mysql_store_result(mysql);
-    if(result == nullptr) {                                                                                                                                                                                                             
-      LOG_ERROR("mysql_store_result error:%s\n", mysql_error(mysql));                                                                                                                                                                 
-      return;                                                                                                                                                                                                                         
-    }       
+    if(result == nullptr) {
+      LOG_ERROR("mysql_store_result error:%s\n", mysql_error(mysql));
+      return;
+    }
 
     //返回结果集中的列数
     int num_fields = mysql_num_fields(result);
@@ -46,7 +67,9 @@ void Http_Conn::initmysql_result(Conn_Pool* connPool) {
     while(MYSQL_ROW row = mysql_fetch_row(result)) {
         string temp1(row[0]);
         string temp2(row[1]);
+        m_lock.lock();
         users[temp1] = temp2;
+        m_lock.unlock();
     }
 
     mysql_free_result(result); //释放结果集占用的内存
@@ -68,7 +91,7 @@ void addfd(int epollfd, int fd, bool one_shot, int TRIGMode) {
     if(TRIGMode == 1) event.events = EPOLLIN | EPOLLET | EPOLLRDHUP; //ET模式，边缘触发
     else event.events = EPOLLIN | EPOLLRDHUP; //LT模式，水平触发，EPOLLRDHUP事件：当对端关闭连接或者半关闭连接时，epoll_wait会返回EPOLLRDHUP事件
 
-    if (one_shot) event.events |= EPOLLONESHOT; //开启EPOLLONESHOT，保证一个socket连接在任一时刻只被一个线程处理
+    if(one_shot) event.events |= EPOLLONESHOT; //开启EPOLLONESHOT，保证一个socket连接在任一时刻只被一个线程处理
 
     epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
     setnonblocking(fd);
@@ -96,7 +119,7 @@ int Http_Conn::m_user_count = 0;
 
 void Http_Conn::close_conn(bool real_close) {
     if(real_close && (m_sockfd != -1)) {
-        printf("close %d\n", m_sockfd);
+        LOG_INFO("close connection: %d\n", m_sockfd);
         removefd(m_epollfd, m_sockfd);
         m_sockfd = -1;
         m_user_count--;
@@ -245,7 +268,7 @@ Http_Conn::HTTP_CODE Http_Conn::parse_request_line(char* text) {
     if(!m_url || m_url[0] != '/') return BAD_REQUEST; //请求行中的目标url不合法
 
     // 防止路径遍历攻击
-    if(strstr(m_url, "../") != NULL) return BAD_REQUEST;
+    if(is_path_traversal(m_url)) return BAD_REQUEST;
 
     if(strlen(m_url) == 1) strcat(m_url, "judge.html"); //如果请求行中的目标url为"/"，则将目标url改为"/judge.html"
 
@@ -320,7 +343,7 @@ Http_Conn::HTTP_CODE Http_Conn::process_read() {
                 line_status = LINE_OPEN; //解析请求体时，行状态应该设置为LINE_OPEN，因为HTTP请求体没有行的概念
                 break;
             }
-            default: 
+            default:
                 return INTERNAL_ERROR;
         }
     }
@@ -328,137 +351,138 @@ Http_Conn::HTTP_CODE Http_Conn::process_read() {
     return NO_REQUEST;
 }
 
+// 解析POST请求体中的用户名和密码
+// 返回值: 0=成功, -1=格式错误, -2=缓冲区溢出
+int parse_user_credentials(const char* data, std::string& username, std::string& password) {
+    if(!data) return -1;
+
+    // 查找 username= 和 password= 的位置
+    const char* username_start = strstr(data, "username=");
+    if(!username_start) return -1;
+    username_start += 9; // 跳过 "username="
+
+    const char* password_start = strstr(data, "password=");
+    if(!password_start) return -1;
+    password_start += 9; // 跳过 "password="
+
+    // 找到结束符(&或\0)
+    const char* username_end = strchr(username_start, '&');
+    const char* password_end = password_start + strlen(password_start);
+
+    // 检查长度并防止溢出
+    size_t username_len = username_end ? (username_end - username_start) : strlen(username_start);
+    size_t password_len = password_end - password_start;
+
+    if(username_len >= 100 || password_len >= 100) return -2;
+
+    username.assign(username_start, username_len);
+    password.assign(password_start, password_len);
+
+    return 0;
+}
+
 Http_Conn::HTTP_CODE Http_Conn::do_request() {
     strcpy(m_real_file, doc_root);
     int len = strlen(doc_root);
-    printf("m_url:%s\n", m_url);
+    LOG_INFO("m_url: %s\n", m_url);
+
     const char* p = strrchr(m_url, '/'); //strrchr函数会返回字符串m_url中最后一次出现字符'/'的位置
+    if(!p) return BAD_REQUEST;
 
-    if(cgi == 1 && (*(p + 1) == '2' || *(p + 1) == '3')) {
+    char route_flag = *(p + 1);
+
+    // 使用URL路由映射表替代魔数
+    auto it = URL_ROUTES.find(route_flag);
+    if(it != URL_ROUTES.end()) {
+        strncpy(m_real_file + len, it -> second, FILENAME_LEN - len - 1);
+    }
+    else if(cgi == 1 && (route_flag == '2' || route_flag == '3')) {
         //根据标志判断是登录检测还是注册检测
-        char flag = m_url[1]; //m_url的第一个字符为'/'
-        char* m_url_real = (char*)malloc(sizeof(char) * 200); //存储请求资源的文件路径，长度应足够大，防止指针越界
-        strcpy(m_url_real, "/");
-        strcat(m_url_real, m_url + 2); //将请求资源的文件路径存储在m_url_real中，m_url + 2跳过"/"和标志字符
-        strncpy(m_real_file + len, m_url_real, FILENAME_LEN - len - 1); //将请求资源的文件路径添加到m_real_file中，m_real_file中存储的就是请求资源的完整路径
-        free(m_url_real);
-
-        //解析用户名和密码
-        char name[100], password[100];
-        int i;
-        for(i = 5; m_string[i] != '&'; ++i) name[i - 5] = m_string[i]; //m_url的前5个字符为"/2"或"/3"，跳过这两个字符，解析用户名
-        name[i - 5] = '\0';
-
-        int j = 0;
-        for(i = i + 10; m_string[i] != '\0'; ++i, ++j) password[j] = m_string[i]; //m_string中用户名和密码之间有"&password="，跳过这10个字符，解析密码
-        password[j] = '\0';
-
-        if(flag == '3') {
-            //如果是注册，先检测数据库中是否有重名的，没有重名的，进行增加数据
-            MYSQL *mysql = NULL;
-            ConnectionRAII mysqlconn(&mysql, m_connPool);
-            if(!mysql) { strcpy(m_url, "/registerError.html"); }
-            else {
-                MYSQL_STMT *stmt = mysql_stmt_init(mysql);
-                if(!stmt) strcpy(m_url, "/registerError.html");
-                else {
-                    const char *insert_sql = "INSERT INTO user(username, passwd) VALUES(?, ?)";
-                    if(mysql_stmt_prepare(stmt, insert_sql, strlen(insert_sql)) == 0) {
-                        MYSQL_BIND bind[2];
-                        memset(bind, 0, sizeof(bind));
-                        bind[0].buffer_type = MYSQL_TYPE_STRING;
-                        bind[0].buffer = name;
-                        bind[0].buffer_length = strlen(name);
-                        bind[1].buffer_type = MYSQL_TYPE_STRING;
-                        bind[1].buffer = password;
-                        bind[1].buffer_length = strlen(password);
-                        mysql_stmt_bind_param(stmt, bind);
-                        if(mysql_stmt_execute(stmt) == 0) {
-                            users.insert(pair<string, string>(name, password));
-                            strcpy(m_url, "/log.html");
-                        }
-                        else strcpy(m_url, "/registerError.html");
-                    }
-                    else strcpy(m_url, "/registerError.html");
-                    mysql_stmt_close(stmt);
-                }
+        std::string username, password;
+        int parse_res = parse_user_credentials(m_string, username, password);
+        if(parse_res != 0) strcpy(m_url, route_flag == '3' ? "/registerError.html" : "/logError.html");
+        else {
+            MYSQL *db_conn = NULL;
+            ConnectionRAII mysqlconn(&db_conn, m_connPool);
+            if(!db_conn) {
+                strcpy(m_url, route_flag == '3' ? "/registerError.html" : "/logError.html");
             }
-        }
-        else if(flag == '2') {
-            //如果是登录，使用预处理语句查询
-            MYSQL *mysql = NULL;
-            ConnectionRAII mysqlconn(&mysql, m_connPool);
-            if(!mysql) { strcpy(m_url, "/logError.html"); }
             else {
-                MYSQL_STMT *stmt = mysql_stmt_init(mysql);
-                if(!stmt) strcpy(m_url, "/logError.html");
+                MYSQL_STMT *stmt = mysql_stmt_init(db_conn);
+                if(!stmt) strcpy(m_url, route_flag == '3' ? "/registerError.html" : "/logError.html");
                 else {
-                    const char *select_sql = "SELECT passwd FROM user WHERE username = ?";
-                    if(mysql_stmt_prepare(stmt, select_sql, strlen(select_sql)) == 0) {
-                        MYSQL_BIND bind[1];
-                        memset(bind, 0, sizeof(bind));
-                        bind[0].buffer_type = MYSQL_TYPE_STRING;
-                        bind[0].buffer = name;
-                        bind[0].buffer_length = strlen(name);
-                        mysql_stmt_bind_param(stmt, bind);
-                        if(mysql_stmt_execute(stmt) == 0) {
-                            mysql_stmt_store_result(stmt);
-                            char db_password[100] = {0};
-                            unsigned long length = 0;
-                            MYSQL_BIND res_bind;
-                            memset(&res_bind, 0, sizeof(res_bind));
-                            res_bind.buffer_type = MYSQL_TYPE_STRING;
-                            res_bind.buffer = db_password;
-                            res_bind.buffer_length = sizeof(db_password) - 1;
-                            res_bind.length = &length;
-                            mysql_stmt_bind_result(stmt, &res_bind);
-                            if(mysql_stmt_fetch(stmt) == 0) {
-                                if(strcmp(db_password, password) == 0) strcpy(m_url, "/welcome.html");
-                                else strcpy(m_url, "/logError.html");
+                    if(route_flag == '3') {
+                        // 注册
+                        const char *insert_sql = "INSERT INTO user(username, passwd) VALUES(?, ?)";
+                        if(mysql_stmt_prepare(stmt, insert_sql, strlen(insert_sql)) == 0) {
+                            MYSQL_BIND bind[2];
+                            memset(bind, 0, sizeof(bind));
+                            bind[0].buffer_type = MYSQL_TYPE_STRING;
+                            bind[0].buffer = (char*)username.c_str();
+                            bind[0].buffer_length = username.length();
+                            bind[1].buffer_type = MYSQL_TYPE_STRING;
+                            bind[1].buffer = (char*)password.c_str();
+                            bind[1].buffer_length = password.length();
+                            mysql_stmt_bind_param(stmt, bind);
+                            if(mysql_stmt_execute(stmt) == 0) {
+                                m_lock.lock();
+                                users[username] = password;
+                                m_lock.unlock();
+                                strcpy(m_url, "/welcome.html");
                             }
-                            else strcpy(m_url, "/logError.html");
+                            else strcpy(m_url, "/registerError.html");
+                        }
+                        else {
+                            strcpy(m_url, "/registerError.html");
+                        }
+                    }
+                    else {
+                        // 登录
+                        const char *select_sql = "SELECT passwd FROM user WHERE username = ?";
+                        if(mysql_stmt_prepare(stmt, select_sql, strlen(select_sql)) == 0) {
+                            MYSQL_BIND bind[1];
+                            memset(bind, 0, sizeof(bind));
+                            bind[0].buffer_type = MYSQL_TYPE_STRING;
+                            bind[0].buffer = (char*)username.c_str();
+                            bind[0].buffer_length = username.length();
+                            mysql_stmt_bind_param(stmt, bind);
+                            if(mysql_stmt_execute(stmt) == 0) {
+                                if(mysql_stmt_store_result(stmt) != 0) {
+                                    strcpy(m_url, "/logError.html");
+                                }
+                                else {
+                                    char db_password[100] = {0};
+                                    unsigned long length = 0;
+                                    MYSQL_BIND res_bind;
+                                    memset(&res_bind, 0, sizeof(res_bind));
+                                    res_bind.buffer_type = MYSQL_TYPE_STRING;
+                                    res_bind.buffer = db_password;
+                                    res_bind.buffer_length = sizeof(db_password) - 1;
+                                    res_bind.length = &length;
+                                    mysql_stmt_bind_result(stmt, &res_bind);
+                                    if(mysql_stmt_fetch(stmt) == 0) {
+                                        if(strcmp(db_password, password.c_str()) == 0) {
+                                            strcpy(m_url, "/welcome.html");
+                                        }
+                                        else strcpy(m_url, "/logError.html");
+                                    }
+                                    else strcpy(m_url, "/logError.html");                                 
+                                }
+                            }
+                            else strcpy(m_url, "/logError.html");                          
                         }
                         else strcpy(m_url, "/logError.html");
                     }
-                    else strcpy(m_url, "/logError.html");
-
                     mysql_stmt_close(stmt);
                 }
             }
         }
+        // CGI请求也设置对应的文件路径
+        strncpy(m_real_file + len, m_url, FILENAME_LEN - len - 1);
     }
-
-    if(*(p + 1) == '0') { // 如果请求资源为/0，表示请求注册页面
-        char* m_url_real = (char*)malloc(sizeof(char) * 200);
-        strcpy(m_url_real, "/register.html");
-        strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
-        free(m_url_real);
+    else {
+        strncpy(m_real_file + len, m_url, FILENAME_LEN - len - 1); //其他情况，将请求资源的文件路径添加到m_real_file中
     }
-    else if(*(p + 1) == '1') { // 如果请求资源为/1，表示请求登录页面
-        char* m_url_real = (char*)malloc(sizeof(char) * 200);
-        strcpy(m_url_real, "/log.html");
-        strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
-        free(m_url_real);
-    }
-    else if(*(p + 1) == '5') { // 如果请求资源为/5，表示请求图片页面
-        char* m_url_real = (char*)malloc(sizeof(char) * 200);
-        strcpy(m_url_real, "/picture.html");
-        strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
-        free(m_url_real);
-    }
-    else if(*(p + 1) == '6') { // 如果请求资源为/6，表示请求视频页面
-        char* m_url_real = (char*)malloc(sizeof(char) * 200);
-        strcpy(m_url_real, "/video.html");
-        strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
-        free(m_url_real);
-    }
-    else if(*(p + 1) == '7') { // 如果请求资源为/7，表示请求关注页面
-        char* m_url_real = (char*)malloc(sizeof(char) * 200);
-        strcpy(m_url_real, "/fans.html");
-        strncpy(m_real_file + len, m_url_real, strlen(m_url_real));
-        free(m_url_real);
-    }
-    else strncpy(m_real_file + len, m_url, FILENAME_LEN - len - 1); //其他情况，将请求资源的文件路径添加到m_real_file中
 
     // 使用realpath解析真实路径，防止路径遍历
     char resolved_path[FILENAME_LEN];
@@ -469,7 +493,7 @@ Http_Conn::HTTP_CODE Http_Conn::do_request() {
 
     if(!(m_file_stat.st_mode & S_IROTH)) return FORBIDDEN_REQUEST; //如果请求资源的文件存在，但没有读取权限，返回FORBIDDEN_REQUEST
 
-    if(S_ISDIR(m_file_stat.st_mode)) return BAD_REQUEST; //如果请求资源的文件存在，但是一个目录，返回BAD_REQUEST
+    if(S_ISDIR(m_file_stat.st_mode)) return BAD_REQUEST; //如果请求资源的文件存在，但是一目录，返回BAD_REQUEST
 
     m_file_fd = open(resolved_path, O_RDONLY); //以只读方式打开请求资源的文件，返回文件描述符
     if(m_file_fd < 0) return NO_RESOURCE;
@@ -576,7 +600,7 @@ bool Http_Conn::add_blank_line() {
 }
 
 bool Http_Conn::add_headers(int content_length) {
-    return add_content_length(content_length) && add_content_type() && add_linger() && add_blank_line(); 
+    return add_content_length(content_length) && add_content_type() && add_linger() && add_blank_line();
 }
 
 bool Http_Conn::add_content(const char* content) {
