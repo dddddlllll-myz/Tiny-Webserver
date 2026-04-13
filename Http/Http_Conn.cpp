@@ -349,8 +349,8 @@ Http_Conn::HTTP_CODE Http_Conn::process_read() {
             case CHECK_STATE_CONTENT: {
                 res = parse_content(text);
                 if(res == GET_REQUEST) return do_request();
-                line_status = LINE_OPEN; //解析请求体时，行状态应该设置为LINE_OPEN，因为HTTP请求体没有行的概念
-                break;
+                // 数据不完整，直接返回等待更多数据
+                return NO_REQUEST;
             }
             default:
                 return INTERNAL_ERROR;
@@ -404,6 +404,10 @@ Http_Conn::HTTP_CODE Http_Conn::do_request() {
     auto it = URL_ROUTES.find(route_flag);
     if(it != URL_ROUTES.end()) {
         strncpy(m_real_file + len, it -> second, FILENAME_LEN - len - 1);
+    }
+    else if(route_flag == '\0' || route_flag == ' ' || route_flag == '?') {
+        // 处理根路径请求，返回默认页面welcome.html
+        strncpy(m_real_file + len, "/welcome.html", FILENAME_LEN - len - 1);
     }
     else if(cgi == 1 && (route_flag == '2' || route_flag == '3')) {
         //根据标志判断是登录检测还是注册检测
@@ -691,6 +695,13 @@ bool Http_Conn::process_write(HTTP_CODE res) { //根据HTTP请求的处理结果
 }
 
 void Http_Conn::process() {
+    // Proactor模式下，dealwithread已调用read_once()读取数据到缓冲区
+    // 如果缓冲区为空，才需要再次读取（不应该发生，除非是新的读事件）
+    if(m_read_idx == 0 && !read_once()) {
+        close_conn();
+        return;
+    }
+
     HTTP_CODE read_res = process_read(); //处理HTTP请求，生成响应报头，响应正文和响应状态码
     if(read_res == NO_REQUEST) {
         modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode); //如果HTTP请求不完整，继续监听客户连接，等待客户发送完整的HTTP请求

@@ -51,20 +51,20 @@ public:
     }; // 主状态机的状态
 
     enum HTTP_CODE {
-        NO_REQUEST,
-        GET_REQUEST,
-        BAD_REQUEST,
-        NO_RESOURCE,
-        FORBIDDEN_REQUEST,
-        FILE_REQUEST,
-        INTERNAL_ERROR,
-        CLOSED_CONNECTION
+        NO_REQUEST, // 请求不完整，需要继续读取客户数据
+        GET_REQUEST, // 获得了完整的HTTP请求
+        BAD_REQUEST, // HTTP请求格式错误
+        NO_RESOURCE, // 请求的资源不存在
+        FORBIDDEN_REQUEST, // 请求的资源被禁止访问
+        FILE_REQUEST, // 请求的是一个文件
+        INTERNAL_ERROR, // 服务器内部错误
+        CLOSED_CONNECTION // 客户端已经关闭连接
     }; // 服务器处理HTTP请求的结果
     
     enum LINE_STATUS {
-        LINE_OK = 0,
-        LINE_BAD,
-        LINE_OPEN
+        LINE_OK = 0, // 读取到一个完整的行
+        LINE_BAD, // 行出错
+        LINE_OPEN // 行数据尚且不完整
     }; // 从状态机的状态
 
 public:

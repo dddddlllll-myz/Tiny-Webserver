@@ -1,0 +1,1093 @@
+2026-04-13 11:16:57.188779 [error]: MySQL Error: 
+2026-04-13 11:17:11.991967 [error]: MySQL Error: 
+2026-04-13 11:18:30.265523 [error]: accept error:errno is 11
+2026-04-13 11:18:30.266280 [info]: deal with the client(127.0.0.1)
+2026-04-13 11:18:30.266582 [info]: adjust timer once
+2026-04-13 11:18:30.266900 [info]: Got 1 http line: GET / HTTP/1.1
+
+2026-04-13 11:18:30.266979 [info]: Got 1 http line: Host: localhost:9006
+
+2026-04-13 11:18:30.267002 [info]: Got 1 http line: Connection: keep-alive
+
+2026-04-13 11:18:30.267014 [info]: Got 1 http line: sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 11:18:30.267024 [info]: oop! unknow header sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 11:18:30.267034 [info]: Got 1 http line: sec-ch-ua-mobile: ?0
+
+2026-04-13 11:18:30.267043 [info]: oop! unknow header sec-ch-ua-mobile: ?0
+
+2026-04-13 11:18:30.267052 [info]: Got 1 http line: sec-ch-ua-platform: "Windows"
+
+2026-04-13 11:18:30.267061 [info]: oop! unknow header sec-ch-ua-platform: "Windows"
+
+2026-04-13 11:18:30.267072 [info]: Got 1 http line: Upgrade-Insecure-Requests: 1
+
+2026-04-13 11:18:30.267082 [info]: oop! unknow header Upgrade-Insecure-Requests: 1
+
+2026-04-13 11:18:30.267093 [info]: Got 1 http line: User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 11:18:30.267103 [info]: oop! unknow header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 11:18:30.267114 [info]: Got 1 http line: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 11:18:30.267125 [info]: oop! unknow header Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 11:18:30.267135 [info]: Got 1 http line: Sec-Fetch-Site: none
+
+2026-04-13 11:18:30.267145 [info]: oop! unknow header Sec-Fetch-Site: none
+
+2026-04-13 11:18:30.267156 [info]: Got 1 http line: Sec-Fetch-Mode: navigate
+
+2026-04-13 11:18:30.267166 [info]: oop! unknow header Sec-Fetch-Mode: navigate
+
+2026-04-13 11:18:30.267176 [info]: Got 1 http line: Sec-Fetch-User: ?1
+
+2026-04-13 11:18:30.267187 [info]: oop! unknow header Sec-Fetch-User: ?1
+
+2026-04-13 11:18:30.267197 [info]: Got 1 http line: Sec-Fetch-Dest: document
+
+2026-04-13 11:18:30.267206 [info]: oop! unknow header Sec-Fetch-Dest: document
+
+2026-04-13 11:18:30.267216 [info]: Got 1 http line: Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 11:18:30.267227 [info]: oop! unknow header Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 11:18:30.267238 [info]: Got 1 http line: Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 11:18:30.267248 [info]: oop! unknow header Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 11:18:30.267258 [info]: Got 1 http line: 
+
+2026-04-13 11:18:30.267268 [info]: m_url: /judge.html
+
+2026-04-13 11:18:30.267307 [info]: request:HTTP/1.1 200 OK
+
+2026-04-13 11:18:30.267317 [info]: request:HTTP/1.1 200 OK
+Content-Length: 586
+
+2026-04-13 11:18:30.267327 [info]: request:HTTP/1.1 200 OK
+Content-Length: 586
+Content-Type: text/html
+
+2026-04-13 11:18:30.267336 [info]: request:HTTP/1.1 200 OK
+Content-Length: 586
+Content-Type: text/html
+Connection: keep-alive
+
+2026-04-13 11:18:30.267345 [info]: request:HTTP/1.1 200 OK
+Content-Length: 586
+Content-Type: text/html
+Connection: keep-alive
+
+
+2026-04-13 11:18:30.267732 [info]: send data to the client(127.0.0.1)
+2026-04-13 11:18:30.267799 [info]: adjust timer once
+2026-04-13 11:18:30.307244 [error]: accept error:errno is 11
+2026-04-13 11:18:32.824662 [info]: deal with the client(127.0.0.1)
+2026-04-13 11:18:32.824812 [info]: adjust timer once
+2026-04-13 11:18:32.825023 [info]: Got 1 http line: POST /1 HTTP/1.1
+
+2026-04-13 11:18:32.825109 [info]: Got 1 http line: Host: localhost:9006
+
+2026-04-13 11:18:32.825153 [info]: Got 1 http line: Connection: keep-alive
+
+2026-04-13 11:18:32.825166 [info]: Got 1 http line: Content-Length: 0
+
+2026-04-13 11:18:32.825177 [info]: Got 1 http line: Cache-Control: max-age=0
+
+2026-04-13 11:18:32.825187 [info]: oop! unknow header Cache-Control: max-age=0
+
+2026-04-13 11:18:32.825197 [info]: Got 1 http line: sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 11:18:32.825208 [info]: oop! unknow header sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 11:18:32.825218 [info]: Got 1 http line: sec-ch-ua-mobile: ?0
+
+2026-04-13 11:18:32.825228 [info]: oop! unknow header sec-ch-ua-mobile: ?0
+
+2026-04-13 11:18:32.825238 [info]: Got 1 http line: sec-ch-ua-platform: "Windows"
+
+2026-04-13 11:18:32.825248 [info]: oop! unknow header sec-ch-ua-platform: "Windows"
+
+2026-04-13 11:18:32.825258 [info]: Got 1 http line: Origin: http://localhost:9006
+
+2026-04-13 11:18:32.825271 [info]: oop! unknow header Origin: http://localhost:9006
+
+2026-04-13 11:18:32.825283 [info]: Got 1 http line: Content-Type: application/x-www-form-urlencoded
+
+2026-04-13 11:18:32.825293 [info]: oop! unknow header Content-Type: application/x-www-form-urlencoded
+
+2026-04-13 11:18:32.825340 [info]: Got 1 http line: Upgrade-Insecure-Requests: 1
+
+2026-04-13 11:18:32.825357 [info]: oop! unknow header Upgrade-Insecure-Requests: 1
+
+2026-04-13 11:18:32.825367 [info]: Got 1 http line: User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 11:18:32.825378 [info]: oop! unknow header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 11:18:32.825388 [info]: Got 1 http line: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 11:18:32.825397 [info]: oop! unknow header Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 11:18:32.825407 [info]: Got 1 http line: Sec-Fetch-Site: same-origin
+
+2026-04-13 11:18:32.825417 [info]: oop! unknow header Sec-Fetch-Site: same-origin
+
+2026-04-13 11:18:32.825426 [info]: Got 1 http line: Sec-Fetch-Mode: navigate
+
+2026-04-13 11:18:32.825436 [info]: oop! unknow header Sec-Fetch-Mode: navigate
+
+2026-04-13 11:18:32.825446 [info]: Got 1 http line: Sec-Fetch-User: ?1
+
+2026-04-13 11:18:32.825455 [info]: oop! unknow header Sec-Fetch-User: ?1
+
+2026-04-13 11:18:32.825465 [info]: Got 1 http line: Sec-Fetch-Dest: document
+
+2026-04-13 11:18:32.825478 [info]: oop! unknow header Sec-Fetch-Dest: document
+
+2026-04-13 11:18:32.825491 [info]: Got 1 http line: Referer: http://localhost:9006/
+
+2026-04-13 11:18:32.825504 [info]: oop! unknow header Referer: http://localhost:9006/
+
+2026-04-13 11:18:32.825516 [info]: Got 1 http line: Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 11:18:32.825529 [info]: oop! unknow header Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 11:18:32.825542 [info]: Got 1 http line: Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 11:18:32.825555 [info]: oop! unknow header Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 11:18:32.825567 [info]: Got 1 http line: 
+
+2026-04-13 11:18:32.825580 [info]: m_url: /1
+
+2026-04-13 11:18:32.825646 [info]: request:HTTP/1.1 200 OK
+
+2026-04-13 11:18:32.825709 [info]: request:HTTP/1.1 200 OK
+Content-Length: 725
+
+2026-04-13 11:18:32.825731 [info]: request:HTTP/1.1 200 OK
+Content-Length: 725
+Content-Type: text/html
+
+2026-04-13 11:18:32.825742 [info]: request:HTTP/1.1 200 OK
+Content-Length: 725
+Content-Type: text/html
+Connection: keep-alive
+
+2026-04-13 11:18:32.825752 [info]: request:HTTP/1.1 200 OK
+Content-Length: 725
+Content-Type: text/html
+Connection: keep-alive
+
+
+2026-04-13 11:18:32.826138 [info]: send data to the client(127.0.0.1)
+2026-04-13 11:18:32.826177 [info]: adjust timer once
+2026-04-13 11:18:43.373178 [info]: deal with the client(127.0.0.1)
+2026-04-13 11:18:43.373320 [info]: adjust timer once
+2026-04-13 11:18:43.373586 [info]: Got 1 http line: POST /2CGISQL.cgi HTTP/1.1
+
+2026-04-13 11:18:43.373614 [info]: Got 1 http line: Host: localhost:9006
+
+2026-04-13 11:18:43.373628 [info]: Got 1 http line: Connection: keep-alive
+
+2026-04-13 11:18:43.373646 [info]: Got 1 http line: Content-Length: 26
+
+2026-04-13 11:18:43.373657 [info]: Got 1 http line: Cache-Control: max-age=0
+
+2026-04-13 11:18:43.373667 [info]: oop! unknow header Cache-Control: max-age=0
+
+2026-04-13 11:18:43.373676 [info]: Got 1 http line: sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 11:18:43.373685 [info]: oop! unknow header sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 11:18:43.373694 [info]: Got 1 http line: sec-ch-ua-mobile: ?0
+
+2026-04-13 11:18:43.373703 [info]: oop! unknow header sec-ch-ua-mobile: ?0
+
+2026-04-13 11:18:43.373711 [info]: Got 1 http line: sec-ch-ua-platform: "Windows"
+
+2026-04-13 11:18:43.373720 [info]: oop! unknow header sec-ch-ua-platform: "Windows"
+
+2026-04-13 11:18:43.373729 [info]: Got 1 http line: Origin: http://localhost:9006
+
+2026-04-13 11:18:43.373738 [info]: oop! unknow header Origin: http://localhost:9006
+
+2026-04-13 11:18:43.373747 [info]: Got 1 http line: Content-Type: application/x-www-form-urlencoded
+
+2026-04-13 11:18:43.373755 [info]: oop! unknow header Content-Type: application/x-www-form-urlencoded
+
+2026-04-13 11:18:43.374073 [info]: Got 1 http line: Upgrade-Insecure-Requests: 1
+
+2026-04-13 11:18:43.374136 [info]: oop! unknow header Upgrade-Insecure-Requests: 1
+
+2026-04-13 11:18:43.374150 [info]: Got 1 http line: User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 11:18:43.374160 [info]: oop! unknow header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 11:18:43.374169 [info]: Got 1 http line: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 11:18:43.374178 [info]: oop! unknow header Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 11:18:43.374187 [info]: Got 1 http line: Sec-Fetch-Site: same-origin
+
+2026-04-13 11:18:43.374242 [info]: oop! unknow header Sec-Fetch-Site: same-origin
+
+2026-04-13 11:18:43.374255 [info]: Got 1 http line: Sec-Fetch-Mode: navigate
+
+2026-04-13 11:18:43.374264 [info]: oop! unknow header Sec-Fetch-Mode: navigate
+
+2026-04-13 11:18:43.374273 [info]: Got 1 http line: Sec-Fetch-User: ?1
+
+2026-04-13 11:18:43.374282 [info]: oop! unknow header Sec-Fetch-User: ?1
+
+2026-04-13 11:18:43.374291 [info]: Got 1 http line: Sec-Fetch-Dest: document
+
+2026-04-13 11:18:43.374299 [info]: oop! unknow header Sec-Fetch-Dest: document
+
+2026-04-13 11:18:43.374308 [info]: Got 1 http line: Referer: http://localhost:9006/1
+
+2026-04-13 11:18:43.374317 [info]: oop! unknow header Referer: http://localhost:9006/1
+
+2026-04-13 11:18:43.374326 [info]: Got 1 http line: Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 11:18:43.374335 [info]: oop! unknow header Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 11:18:43.374344 [info]: Got 1 http line: Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 11:18:43.374353 [info]: oop! unknow header Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 11:18:43.374362 [info]: Got 1 http line: 
+
+2026-04-13 11:18:43.374371 [info]: Got 1 http line: user=test&password=test123
+
+2026-04-13 11:18:43.374380 [info]: m_url: /2CGISQL.cgi
+
+2026-04-13 11:18:44.617202 [info]: deal with the client(127.0.0.1)
+2026-04-13 11:18:44.617451 [info]: adjust timer once
+2026-04-13 11:18:44.617755 [info]: Got 1 http line: POST /2CGISQL.cgi HTTP/1.1
+
+2026-04-13 11:18:44.617868 [info]: Got 1 http line: Host: localhost:9006
+
+2026-04-13 11:18:44.618090 [info]: Got 1 http line: Connection: keep-alive
+
+2026-04-13 11:18:44.618121 [info]: Got 1 http line: Content-Length: 26
+
+2026-04-13 11:18:44.618135 [info]: Got 1 http line: Cache-Control: max-age=0
+
+2026-04-13 11:18:44.618144 [info]: oop! unknow header Cache-Control: max-age=0
+
+2026-04-13 11:18:44.618153 [info]: Got 1 http line: sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 11:18:44.618160 [info]: oop! unknow header sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 11:18:44.618168 [info]: Got 1 http line: sec-ch-ua-mobile: ?0
+
+2026-04-13 11:18:44.618176 [info]: oop! unknow header sec-ch-ua-mobile: ?0
+
+2026-04-13 11:18:44.618185 [info]: Got 1 http line: sec-ch-ua-platform: "Windows"
+
+2026-04-13 11:18:44.618194 [info]: oop! unknow header sec-ch-ua-platform: "Windows"
+
+2026-04-13 11:18:44.618204 [info]: Got 1 http line: Origin: http://localhost:9006
+
+2026-04-13 11:18:44.618213 [info]: oop! unknow header Origin: http://localhost:9006
+
+2026-04-13 11:18:44.618223 [info]: Got 1 http line: Content-Type: application/x-www-form-urlencoded
+
+2026-04-13 11:18:44.618233 [info]: oop! unknow header Content-Type: application/x-www-form-urlencoded
+
+2026-04-13 11:18:44.618247 [info]: Got 1 http line: Upgrade-Insecure-Requests: 1
+
+2026-04-13 11:18:44.618264 [info]: oop! unknow header Upgrade-Insecure-Requests: 1
+
+2026-04-13 11:18:44.618276 [info]: Got 1 http line: User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 11:18:44.618285 [info]: oop! unknow header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 11:18:44.618297 [info]: Got 1 http line: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 11:18:44.618316 [info]: oop! unknow header Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 11:18:44.618328 [info]: Got 1 http line: Sec-Fetch-Site: same-origin
+
+2026-04-13 11:18:44.618337 [info]: oop! unknow header Sec-Fetch-Site: same-origin
+
+2026-04-13 11:18:44.618347 [info]: Got 1 http line: Sec-Fetch-Mode: navigate
+
+2026-04-13 11:18:44.618356 [info]: oop! unknow header Sec-Fetch-Mode: navigate
+
+2026-04-13 11:18:44.618365 [info]: Got 1 http line: Sec-Fetch-User: ?1
+
+2026-04-13 11:18:44.618422 [info]: oop! unknow header Sec-Fetch-User: ?1
+
+2026-04-13 11:18:44.618443 [info]: Got 1 http line: Sec-Fetch-Dest: document
+
+2026-04-13 11:18:44.618453 [info]: oop! unknow header Sec-Fetch-Dest: document
+
+2026-04-13 11:18:44.618463 [info]: Got 1 http line: Referer: http://localhost:9006/1
+
+2026-04-13 11:18:44.618472 [info]: oop! unknow header Referer: http://localhost:9006/1
+
+2026-04-13 11:18:44.618480 [info]: Got 1 http line: Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 11:18:44.618489 [info]: oop! unknow header Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 11:18:44.618498 [info]: Got 1 http line: Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 11:18:44.618508 [info]: oop! unknow header Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 11:18:44.618518 [info]: Got 1 http line: 
+
+2026-04-13 11:18:44.618533 [info]: Got 1 http line: user=test&password=test123
+
+2026-04-13 11:18:44.618546 [info]: m_url: /2CGISQL.cgi
+
+2026-04-13 11:18:45.871902 [info]: deal with the client(127.0.0.1)
+2026-04-13 11:18:45.872771 [info]: adjust timer once
+2026-04-13 11:18:45.872913 [info]: Got 1 http line: POST /2CGISQL.cgi HTTP/1.1
+
+2026-04-13 11:18:45.872998 [info]: Got 1 http line: Host: localhost:9006
+
+2026-04-13 11:18:45.873017 [info]: Got 1 http line: Connection: keep-alive
+
+2026-04-13 11:18:45.873050 [info]: Got 1 http line: Content-Length: 26
+
+2026-04-13 11:18:45.873061 [info]: Got 1 http line: Cache-Control: max-age=0
+
+2026-04-13 11:18:45.873070 [info]: oop! unknow header Cache-Control: max-age=0
+
+2026-04-13 11:18:45.873079 [info]: Got 1 http line: sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 11:18:45.873088 [info]: oop! unknow header sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 11:18:45.873102 [info]: Got 1 http line: sec-ch-ua-mobile: ?0
+
+2026-04-13 11:18:45.873111 [info]: oop! unknow header sec-ch-ua-mobile: ?0
+
+2026-04-13 11:18:45.873122 [info]: Got 1 http line: sec-ch-ua-platform: "Windows"
+
+2026-04-13 11:18:45.873131 [info]: oop! unknow header sec-ch-ua-platform: "Windows"
+
+2026-04-13 11:18:45.873142 [info]: Got 1 http line: Origin: http://localhost:9006
+
+2026-04-13 11:18:45.873154 [info]: oop! unknow header Origin: http://localhost:9006
+
+2026-04-13 11:18:45.873163 [info]: Got 1 http line: Content-Type: application/x-www-form-urlencoded
+
+2026-04-13 11:18:45.873174 [info]: oop! unknow header Content-Type: application/x-www-form-urlencoded
+
+2026-04-13 11:18:45.873183 [info]: Got 1 http line: Upgrade-Insecure-Requests: 1
+
+2026-04-13 11:18:45.873194 [info]: oop! unknow header Upgrade-Insecure-Requests: 1
+
+2026-04-13 11:18:45.873206 [info]: Got 1 http line: User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 11:18:45.873217 [info]: oop! unknow header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 11:18:45.873227 [info]: Got 1 http line: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 11:18:45.873238 [info]: oop! unknow header Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 11:18:45.873247 [info]: Got 1 http line: Sec-Fetch-Site: same-origin
+
+2026-04-13 11:18:45.873258 [info]: oop! unknow header Sec-Fetch-Site: same-origin
+
+2026-04-13 11:18:45.873269 [info]: Got 1 http line: Sec-Fetch-Mode: navigate
+
+2026-04-13 11:18:45.873278 [info]: oop! unknow header Sec-Fetch-Mode: navigate
+
+2026-04-13 11:18:45.873289 [info]: Got 1 http line: Sec-Fetch-User: ?1
+
+2026-04-13 11:18:45.873298 [info]: oop! unknow header Sec-Fetch-User: ?1
+
+2026-04-13 11:18:45.873307 [info]: Got 1 http line: Sec-Fetch-Dest: document
+
+2026-04-13 11:18:45.873315 [info]: oop! unknow header Sec-Fetch-Dest: document
+
+2026-04-13 11:18:45.873324 [info]: Got 1 http line: Referer: http://localhost:9006/1
+
+2026-04-13 11:18:45.873333 [info]: oop! unknow header Referer: http://localhost:9006/1
+
+2026-04-13 11:18:45.873342 [info]: Got 1 http line: Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 11:18:45.873351 [info]: oop! unknow header Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 11:18:45.873360 [info]: Got 1 http line: Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 11:18:45.873369 [info]: oop! unknow header Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 11:18:45.873379 [info]: Got 1 http line: 
+
+2026-04-13 11:18:45.873821 [info]: Got 1 http line: user=test&password=test123
+
+2026-04-13 11:18:45.873844 [info]: m_url: /2CGISQL.cgi
+
+2026-04-13 11:18:47.461818 [info]: deal with the client(127.0.0.1)
+2026-04-13 11:18:47.461977 [info]: adjust timer once
+2026-04-13 11:18:47.462315 [info]: Got 1 http line: POST /2CGISQL.cgi HTTP/1.1
+
+2026-04-13 11:18:47.462442 [info]: Got 1 http line: Host: localhost:9006
+
+2026-04-13 11:18:47.462476 [info]: Got 1 http line: Connection: keep-alive
+
+2026-04-13 11:18:47.462493 [info]: Got 1 http line: Content-Length: 26
+
+2026-04-13 11:18:47.462508 [info]: Got 1 http line: Cache-Control: max-age=0
+
+2026-04-13 11:18:47.462538 [info]: oop! unknow header Cache-Control: max-age=0
+
+2026-04-13 11:18:47.462560 [info]: Got 1 http line: sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 11:18:47.462577 [info]: oop! unknow header sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 11:18:47.462591 [info]: Got 1 http line: sec-ch-ua-mobile: ?0
+
+2026-04-13 11:18:47.462604 [info]: oop! unknow header sec-ch-ua-mobile: ?0
+
+2026-04-13 11:18:47.462617 [info]: Got 1 http line: sec-ch-ua-platform: "Windows"
+
+2026-04-13 11:18:47.462633 [info]: oop! unknow header sec-ch-ua-platform: "Windows"
+
+2026-04-13 11:18:47.462658 [info]: Got 1 http line: Origin: http://localhost:9006
+
+2026-04-13 11:18:47.462675 [info]: oop! unknow header Origin: http://localhost:9006
+
+2026-04-13 11:18:47.462688 [info]: Got 1 http line: Content-Type: application/x-www-form-urlencoded
+
+2026-04-13 11:18:47.462701 [info]: oop! unknow header Content-Type: application/x-www-form-urlencoded
+
+2026-04-13 11:18:47.462714 [info]: Got 1 http line: Upgrade-Insecure-Requests: 1
+
+2026-04-13 11:18:47.462727 [info]: oop! unknow header Upgrade-Insecure-Requests: 1
+
+2026-04-13 11:18:47.462740 [info]: Got 1 http line: User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 11:18:47.462754 [info]: oop! unknow header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 11:18:47.462763 [info]: Got 1 http line: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 11:18:47.462772 [info]: oop! unknow header Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 11:18:47.462782 [info]: Got 1 http line: Sec-Fetch-Site: same-origin
+
+2026-04-13 11:18:47.462791 [info]: oop! unknow header Sec-Fetch-Site: same-origin
+
+2026-04-13 11:18:47.462800 [info]: Got 1 http line: Sec-Fetch-Mode: navigate
+
+2026-04-13 11:18:47.462809 [info]: oop! unknow header Sec-Fetch-Mode: navigate
+
+2026-04-13 11:18:47.462818 [info]: Got 1 http line: Sec-Fetch-User: ?1
+
+2026-04-13 11:18:47.462827 [info]: oop! unknow header Sec-Fetch-User: ?1
+
+2026-04-13 11:18:47.462836 [info]: Got 1 http line: Sec-Fetch-Dest: document
+
+2026-04-13 11:18:47.462845 [info]: oop! unknow header Sec-Fetch-Dest: document
+
+2026-04-13 11:18:47.462855 [info]: Got 1 http line: Referer: http://localhost:9006/1
+
+2026-04-13 11:18:47.462864 [info]: oop! unknow header Referer: http://localhost:9006/1
+
+2026-04-13 11:18:47.462873 [info]: Got 1 http line: Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 11:18:47.462882 [info]: oop! unknow header Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 11:18:47.462892 [info]: Got 1 http line: Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 11:18:47.462901 [info]: oop! unknow header Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 11:18:47.462908 [info]: Got 1 http line: 
+
+2026-04-13 11:18:47.462917 [info]: Got 1 http line: user=test&password=test123
+
+2026-04-13 11:18:47.462927 [info]: m_url: /2CGISQL.cgi
+
+2026-04-13 14:36:18.460748 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:36:18.461088 [info]: adjust timer once
+2026-04-13 14:36:18.461412 [info]: close connection: 19
+
+2026-04-13 14:36:19.524937 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:36:19.525088 [info]: adjust timer once
+2026-04-13 14:36:19.525466 [info]: close connection: 19
+
+2026-04-13 14:36:19.531840 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:36:19.532027 [info]: adjust timer once
+2026-04-13 14:36:19.532282 [info]: close connection: 20
+
+2026-04-13 14:36:19.869666 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:36:19.869798 [info]: adjust timer once
+2026-04-13 14:36:19.870010 [info]: close connection: 19
+
+2026-04-13 14:36:21.245560 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:36:21.245687 [info]: adjust timer once
+2026-04-13 14:36:21.246342 [info]: close connection: 19
+
+2026-04-13 14:36:21.577903 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:36:21.578115 [info]: adjust timer once
+2026-04-13 14:36:21.578898 [info]: close connection: 19
+
+2026-04-13 14:36:22.935449 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:36:22.935506 [info]: adjust timer once
+2026-04-13 14:36:22.935711 [info]: close connection: 19
+
+2026-04-13 14:36:23.809476 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:36:23.809684 [info]: adjust timer once
+2026-04-13 14:36:23.809872 [info]: close connection: 19
+
+2026-04-13 14:36:23.815738 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:36:23.815896 [info]: adjust timer once
+2026-04-13 14:36:23.816021 [info]: close connection: 20
+
+2026-04-13 14:36:24.146242 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:36:24.146475 [info]: adjust timer once
+2026-04-13 14:36:24.146578 [info]: close connection: 19
+
+2026-04-13 14:36:29.226606 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:36:29.226731 [info]: adjust timer once
+2026-04-13 14:36:29.226913 [info]: close connection: 19
+
+2026-04-13 14:36:29.554780 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:36:29.554901 [info]: adjust timer once
+2026-04-13 14:36:29.555031 [info]: close connection: 19
+
+2026-04-13 14:36:59.917110 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:36:59.917238 [info]: adjust timer once
+2026-04-13 14:36:59.917359 [info]: close connection: 19
+
+2026-04-13 14:38:21.882165 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:38:21.882287 [info]: adjust timer once
+2026-04-13 14:38:21.882416 [info]: close connection: 21
+
+2026-04-13 14:38:22.885260 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:38:22.885386 [info]: adjust timer once
+2026-04-13 14:38:22.885505 [info]: close connection: 21
+
+2026-04-13 14:38:24.888532 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:38:24.888658 [info]: adjust timer once
+2026-04-13 14:38:24.888855 [info]: close connection: 21
+
+2026-04-13 14:38:27.890231 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:38:27.890385 [info]: adjust timer once
+2026-04-13 14:38:27.890502 [info]: close connection: 21
+
+2026-04-13 14:45:55.578018 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:45:55.578269 [info]: adjust timer once
+2026-04-13 14:45:55.578466 [info]: close connection: 19
+
+2026-04-13 14:45:56.646172 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:45:56.646332 [info]: adjust timer once
+2026-04-13 14:45:56.646675 [info]: close connection: 19
+
+2026-04-13 14:45:56.652176 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:45:56.652314 [info]: adjust timer once
+2026-04-13 14:45:56.652506 [info]: close connection: 20
+
+2026-04-13 14:45:56.989874 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:45:56.989997 [info]: adjust timer once
+2026-04-13 14:45:56.990196 [info]: close connection: 19
+
+2026-04-13 14:45:58.080579 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:45:58.080723 [info]: adjust timer once
+2026-04-13 14:45:58.081019 [info]: close connection: 19
+
+2026-04-13 14:45:58.415300 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:45:58.415439 [info]: adjust timer once
+2026-04-13 14:45:58.415778 [info]: close connection: 19
+
+2026-04-13 14:45:59.630263 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:45:59.630599 [info]: adjust timer once
+2026-04-13 14:45:59.630730 [info]: close connection: 19
+
+2026-04-13 14:46:04.697383 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:46:04.697537 [info]: adjust timer once
+2026-04-13 14:46:04.697750 [info]: close connection: 19
+
+2026-04-13 14:46:04.702404 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:46:04.702538 [info]: adjust timer once
+2026-04-13 14:46:04.702664 [info]: close connection: 20
+
+2026-04-13 14:46:05.055907 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:46:05.056099 [info]: adjust timer once
+2026-04-13 14:46:05.056912 [info]: close connection: 19
+
+2026-04-13 14:46:35.143405 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:46:35.143631 [info]: adjust timer once
+2026-04-13 14:46:35.143775 [info]: close connection: 19
+
+2026-04-13 14:46:35.478155 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:46:35.478313 [info]: adjust timer once
+2026-04-13 14:46:35.478427 [info]: close connection: 19
+
+2026-04-13 14:47:35.832793 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:47:35.832912 [info]: adjust timer once
+2026-04-13 14:47:35.832969 [info]: close connection: 19
+
+2026-04-13 14:47:44.471035 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:47:44.471174 [info]: adjust timer once
+2026-04-13 14:47:44.471324 [info]: close connection: 21
+
+2026-04-13 14:47:45.474416 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:47:45.474534 [info]: adjust timer once
+2026-04-13 14:47:45.474657 [info]: close connection: 21
+
+2026-04-13 14:47:47.476813 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:47:47.476975 [info]: adjust timer once
+2026-04-13 14:47:47.477016 [info]: close connection: 21
+
+2026-04-13 14:47:50.479654 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:47:50.479797 [info]: adjust timer once
+2026-04-13 14:47:50.479943 [info]: close connection: 21
+
+2026-04-13 14:48:00.104611 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:48:00.104781 [info]: adjust timer once
+2026-04-13 14:48:00.104988 [info]: close connection: 19
+
+2026-04-13 14:48:00.111619 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:48:00.111739 [info]: adjust timer once
+2026-04-13 14:48:00.112670 [info]: close connection: 20
+
+2026-04-13 14:48:00.534257 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:48:00.534379 [info]: adjust timer once
+2026-04-13 14:48:00.534505 [info]: close connection: 19
+
+2026-04-13 14:48:01.589769 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:48:01.589925 [info]: adjust timer once
+2026-04-13 14:48:01.590070 [info]: close connection: 19
+
+2026-04-13 14:48:01.595681 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:48:01.595845 [info]: adjust timer once
+2026-04-13 14:48:01.595995 [info]: close connection: 20
+
+2026-04-13 14:48:01.936600 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:48:01.936734 [info]: adjust timer once
+2026-04-13 14:48:01.936838 [info]: close connection: 19
+
+2026-04-13 14:48:05.734619 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:48:05.734692 [info]: adjust timer once
+2026-04-13 14:48:05.734825 [info]: close connection: 19
+
+2026-04-13 14:48:06.119932 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:48:06.120035 [info]: adjust timer once
+2026-04-13 14:48:06.120176 [info]: close connection: 19
+
+2026-04-13 14:54:51.119634 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:54:51.120574 [info]: adjust timer once
+2026-04-13 14:54:51.120927 [info]: close connection: 19
+
+2026-04-13 14:54:52.126232 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:54:52.126353 [info]: adjust timer once
+2026-04-13 14:54:52.128718 [info]: close connection: 19
+
+2026-04-13 14:54:54.131224 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:54:54.131376 [info]: adjust timer once
+2026-04-13 14:54:54.131713 [info]: close connection: 19
+
+2026-04-13 14:54:57.133411 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:54:57.134107 [info]: close connection: 19
+
+2026-04-13 14:54:57.134170 [info]: adjust timer once
+2026-04-13 14:55:06.525543 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:55:06.525688 [info]: adjust timer once
+2026-04-13 14:55:06.526013 [info]: close connection: 19
+
+2026-04-13 14:55:07.615060 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:55:07.615220 [info]: adjust timer once
+2026-04-13 14:55:07.615364 [info]: close connection: 19
+
+2026-04-13 14:55:07.621500 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:55:07.621631 [info]: adjust timer once
+2026-04-13 14:55:07.621961 [info]: close connection: 20
+
+2026-04-13 14:55:08.011943 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:55:08.012079 [info]: adjust timer once
+2026-04-13 14:55:08.012267 [info]: close connection: 19
+
+2026-04-13 14:58:34.212180 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:58:34.212558 [info]: adjust timer once
+2026-04-13 14:58:34.212712 [info]: Got 1 http line: GET / HTTP/1.1
+
+2026-04-13 14:58:34.212754 [info]: Got 1 http line: Host: 127.0.0.1:9006
+
+2026-04-13 14:58:34.212772 [info]: Got 1 http line: User-Agent: Wget/1.21.4
+
+2026-04-13 14:58:34.212782 [info]: oop! unknow header User-Agent: Wget/1.21.4
+
+2026-04-13 14:58:34.212791 [info]: Got 1 http line: Accept: */*
+
+2026-04-13 14:58:34.212799 [info]: oop! unknow header Accept: */*
+
+2026-04-13 14:58:34.212808 [info]: Got 1 http line: Accept-Encoding: identity
+
+2026-04-13 14:58:34.212820 [info]: oop! unknow header Accept-Encoding: identity
+
+2026-04-13 14:58:34.212831 [info]: Got 1 http line: Connection: Keep-Alive
+
+2026-04-13 14:58:34.212842 [info]: Got 1 http line: 
+
+2026-04-13 14:58:34.212854 [info]: m_url: /judge.html
+
+2026-04-13 14:58:34.212900 [info]: request:HTTP/1.1 200 OK
+
+2026-04-13 14:58:34.212961 [info]: request:HTTP/1.1 200 OK
+Content-Length: 586
+
+2026-04-13 14:58:34.212984 [info]: request:HTTP/1.1 200 OK
+Content-Length: 586
+Content-Type: text/html
+
+2026-04-13 14:58:34.212999 [info]: request:HTTP/1.1 200 OK
+Content-Length: 586
+Content-Type: text/html
+Connection: keep-alive
+
+2026-04-13 14:58:34.213010 [info]: request:HTTP/1.1 200 OK
+Content-Length: 586
+Content-Type: text/html
+Connection: keep-alive
+
+
+2026-04-13 14:58:34.224496 [info]: send data to the client(127.0.0.1)
+2026-04-13 14:58:34.224625 [info]: adjust timer once
+2026-04-13 14:58:34.225423 [info]: close fd 19
+2026-04-13 14:58:36.595040 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:58:36.595176 [info]: adjust timer once
+2026-04-13 14:58:36.595350 [info]: Got 1 http line: GET / HTTP/1.1
+
+2026-04-13 14:58:36.595421 [info]: Got 1 http line: Host: localhost:9006
+
+2026-04-13 14:58:36.595440 [info]: Got 1 http line: Connection: keep-alive
+
+2026-04-13 14:58:36.595450 [info]: Got 1 http line: sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 14:58:36.595458 [info]: oop! unknow header sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 14:58:36.595466 [info]: Got 1 http line: sec-ch-ua-mobile: ?0
+
+2026-04-13 14:58:36.595473 [info]: oop! unknow header sec-ch-ua-mobile: ?0
+
+2026-04-13 14:58:36.595480 [info]: Got 1 http line: sec-ch-ua-platform: "Windows"
+
+2026-04-13 14:58:36.595487 [info]: oop! unknow header sec-ch-ua-platform: "Windows"
+
+2026-04-13 14:58:36.595494 [info]: Got 1 http line: Upgrade-Insecure-Requests: 1
+
+2026-04-13 14:58:36.595501 [info]: oop! unknow header Upgrade-Insecure-Requests: 1
+
+2026-04-13 14:58:36.595509 [info]: Got 1 http line: User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 14:58:36.595516 [info]: oop! unknow header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 14:58:36.595713 [info]: Got 1 http line: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 14:58:36.595731 [info]: oop! unknow header Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 14:58:36.595740 [info]: Got 1 http line: Sec-Fetch-Site: none
+
+2026-04-13 14:58:36.595748 [info]: oop! unknow header Sec-Fetch-Site: none
+
+2026-04-13 14:58:36.595755 [info]: Got 1 http line: Sec-Fetch-Mode: navigate
+
+2026-04-13 14:58:36.595762 [info]: oop! unknow header Sec-Fetch-Mode: navigate
+
+2026-04-13 14:58:36.595769 [info]: Got 1 http line: Sec-Fetch-User: ?1
+
+2026-04-13 14:58:36.595776 [info]: oop! unknow header Sec-Fetch-User: ?1
+
+2026-04-13 14:58:36.595783 [info]: Got 1 http line: Sec-Fetch-Dest: document
+
+2026-04-13 14:58:36.595790 [info]: oop! unknow header Sec-Fetch-Dest: document
+
+2026-04-13 14:58:36.595797 [info]: Got 1 http line: Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 14:58:36.595819 [info]: oop! unknow header Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 14:58:36.595835 [info]: Got 1 http line: Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 14:58:36.595843 [info]: oop! unknow header Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 14:58:36.595850 [info]: Got 1 http line: 
+
+2026-04-13 14:58:36.595857 [info]: m_url: /judge.html
+
+2026-04-13 14:58:36.595894 [info]: request:HTTP/1.1 200 OK
+
+2026-04-13 14:58:36.595902 [info]: request:HTTP/1.1 200 OK
+Content-Length: 586
+
+2026-04-13 14:58:36.595910 [info]: request:HTTP/1.1 200 OK
+Content-Length: 586
+Content-Type: text/html
+
+2026-04-13 14:58:36.595917 [info]: request:HTTP/1.1 200 OK
+Content-Length: 586
+Content-Type: text/html
+Connection: keep-alive
+
+2026-04-13 14:58:36.595927 [info]: request:HTTP/1.1 200 OK
+Content-Length: 586
+Content-Type: text/html
+Connection: keep-alive
+
+
+2026-04-13 14:58:36.596722 [info]: send data to the client(127.0.0.1)
+2026-04-13 14:58:36.596795 [info]: adjust timer once
+2026-04-13 14:58:36.653852 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:58:36.654100 [info]: adjust timer once
+2026-04-13 14:58:36.654262 [info]: Got 1 http line: GET /favicon.ico HTTP/1.1
+
+2026-04-13 14:58:36.654387 [info]: Got 1 http line: Host: localhost:9006
+
+2026-04-13 14:58:36.654408 [info]: Got 1 http line: Connection: keep-alive
+
+2026-04-13 14:58:36.654419 [info]: Got 1 http line: sec-ch-ua-platform: "Windows"
+
+2026-04-13 14:58:36.654428 [info]: oop! unknow header sec-ch-ua-platform: "Windows"
+
+2026-04-13 14:58:36.654438 [info]: Got 1 http line: User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 14:58:36.654447 [info]: oop! unknow header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 14:58:36.654456 [info]: Got 1 http line: sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 14:58:36.654465 [info]: oop! unknow header sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 14:58:36.654474 [info]: Got 1 http line: sec-ch-ua-mobile: ?0
+
+2026-04-13 14:58:36.654483 [info]: oop! unknow header sec-ch-ua-mobile: ?0
+
+2026-04-13 14:58:36.654492 [info]: Got 1 http line: Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+
+2026-04-13 14:58:36.654501 [info]: oop! unknow header Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+
+2026-04-13 14:58:36.654510 [info]: Got 1 http line: Sec-Fetch-Site: same-origin
+
+2026-04-13 14:58:36.654518 [info]: oop! unknow header Sec-Fetch-Site: same-origin
+
+2026-04-13 14:58:36.654532 [info]: Got 1 http line: Sec-Fetch-Mode: no-cors
+
+2026-04-13 14:58:36.654545 [info]: oop! unknow header Sec-Fetch-Mode: no-cors
+
+2026-04-13 14:58:36.654569 [info]: Got 1 http line: Sec-Fetch-Dest: image
+
+2026-04-13 14:58:36.654580 [info]: oop! unknow header Sec-Fetch-Dest: image
+
+2026-04-13 14:58:36.654590 [info]: Got 1 http line: Referer: http://localhost:9006/
+
+2026-04-13 14:58:36.654598 [info]: oop! unknow header Referer: http://localhost:9006/
+
+2026-04-13 14:58:36.654607 [info]: Got 1 http line: Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 14:58:36.654616 [info]: oop! unknow header Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 14:58:36.654916 [info]: Got 1 http line: Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 14:58:36.654994 [info]: oop! unknow header Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 14:58:36.655016 [info]: Got 1 http line: 
+
+2026-04-13 14:58:36.655029 [info]: m_url: /favicon.ico
+
+2026-04-13 14:58:36.655086 [info]: request:HTTP/1.1 200 OK
+
+2026-04-13 14:58:36.655098 [info]: request:HTTP/1.1 200 OK
+Content-Length: 4286
+
+2026-04-13 14:58:36.655108 [info]: request:HTTP/1.1 200 OK
+Content-Length: 4286
+Content-Type: text/html
+
+2026-04-13 14:58:36.655132 [info]: request:HTTP/1.1 200 OK
+Content-Length: 4286
+Content-Type: text/html
+Connection: keep-alive
+
+2026-04-13 14:58:36.655143 [info]: request:HTTP/1.1 200 OK
+Content-Length: 4286
+Content-Type: text/html
+Connection: keep-alive
+
+
+2026-04-13 14:58:36.655489 [info]: send data to the client(127.0.0.1)
+2026-04-13 14:58:36.655563 [info]: adjust timer once
+2026-04-13 14:58:39.223565 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:58:39.223722 [info]: adjust timer once
+2026-04-13 14:58:39.224074 [info]: Got 1 http line: POST /0 HTTP/1.1
+
+2026-04-13 14:58:39.224158 [info]: Got 1 http line: Host: localhost:9006
+
+2026-04-13 14:58:39.224180 [info]: Got 1 http line: Connection: keep-alive
+
+2026-04-13 14:58:39.224192 [info]: Got 1 http line: Content-Length: 0
+
+2026-04-13 14:58:39.224203 [info]: Got 1 http line: Cache-Control: max-age=0
+
+2026-04-13 14:58:39.224213 [info]: oop! unknow header Cache-Control: max-age=0
+
+2026-04-13 14:58:39.224223 [info]: Got 1 http line: sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 14:58:39.224233 [info]: oop! unknow header sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 14:58:39.224242 [info]: Got 1 http line: sec-ch-ua-mobile: ?0
+
+2026-04-13 14:58:39.224251 [info]: oop! unknow header sec-ch-ua-mobile: ?0
+
+2026-04-13 14:58:39.224261 [info]: Got 1 http line: sec-ch-ua-platform: "Windows"
+
+2026-04-13 14:58:39.224271 [info]: oop! unknow header sec-ch-ua-platform: "Windows"
+
+2026-04-13 14:58:39.224281 [info]: Got 1 http line: Origin: http://localhost:9006
+
+2026-04-13 14:58:39.224290 [info]: oop! unknow header Origin: http://localhost:9006
+
+2026-04-13 14:58:39.224305 [info]: Got 1 http line: Content-Type: application/x-www-form-urlencoded
+
+2026-04-13 14:58:39.224318 [info]: oop! unknow header Content-Type: application/x-www-form-urlencoded
+
+2026-04-13 14:58:39.224330 [info]: Got 1 http line: Upgrade-Insecure-Requests: 1
+
+2026-04-13 14:58:39.224342 [info]: oop! unknow header Upgrade-Insecure-Requests: 1
+
+2026-04-13 14:58:39.224354 [info]: Got 1 http line: User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 14:58:39.224366 [info]: oop! unknow header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 14:58:39.224378 [info]: Got 1 http line: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 14:58:39.224391 [info]: oop! unknow header Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 14:58:39.224403 [info]: Got 1 http line: Sec-Fetch-Site: same-origin
+
+2026-04-13 14:58:39.224415 [info]: oop! unknow header Sec-Fetch-Site: same-origin
+
+2026-04-13 14:58:39.224427 [info]: Got 1 http line: Sec-Fetch-Mode: navigate
+
+2026-04-13 14:58:39.224439 [info]: oop! unknow header Sec-Fetch-Mode: navigate
+
+2026-04-13 14:58:39.224451 [info]: Got 1 http line: Sec-Fetch-User: ?1
+
+2026-04-13 14:58:39.224463 [info]: oop! unknow header Sec-Fetch-User: ?1
+
+2026-04-13 14:58:39.224473 [info]: Got 1 http line: Sec-Fetch-Dest: document
+
+2026-04-13 14:58:39.224482 [info]: oop! unknow header Sec-Fetch-Dest: document
+
+2026-04-13 14:58:39.224492 [info]: Got 1 http line: Referer: http://localhost:9006/
+
+2026-04-13 14:58:39.224501 [info]: oop! unknow header Referer: http://localhost:9006/
+
+2026-04-13 14:58:39.224511 [info]: Got 1 http line: Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 14:58:39.224524 [info]: oop! unknow header Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 14:58:39.224536 [info]: Got 1 http line: Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 14:58:39.224549 [info]: oop! unknow header Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 14:58:39.224575 [info]: Got 1 http line: 
+
+2026-04-13 14:58:39.224588 [info]: m_url: /0
+
+2026-04-13 14:58:39.224643 [info]: request:HTTP/1.1 200 OK
+
+2026-04-13 14:58:39.224660 [info]: request:HTTP/1.1 200 OK
+Content-Length: 724
+
+2026-04-13 14:58:39.224910 [info]: request:HTTP/1.1 200 OK
+Content-Length: 724
+Content-Type: text/html
+
+2026-04-13 14:58:39.224939 [info]: request:HTTP/1.1 200 OK
+Content-Length: 724
+Content-Type: text/html
+Connection: keep-alive
+
+2026-04-13 14:58:39.224950 [info]: request:HTTP/1.1 200 OK
+Content-Length: 724
+Content-Type: text/html
+Connection: keep-alive
+
+
+2026-04-13 14:58:39.225133 [info]: send data to the client(127.0.0.1)
+2026-04-13 14:58:39.225198 [info]: adjust timer once
+2026-04-13 14:58:48.274887 [info]: deal with the client(127.0.0.1)
+2026-04-13 14:58:48.275043 [info]: adjust timer once
+2026-04-13 14:58:48.275398 [info]: Got 1 http line: POST /3CGISQL.cgi HTTP/1.1
+
+2026-04-13 14:58:48.275458 [info]: Got 1 http line: Host: localhost:9006
+
+2026-04-13 14:58:48.275481 [info]: Got 1 http line: Connection: keep-alive
+
+2026-04-13 14:58:48.275495 [info]: Got 1 http line: Content-Length: 84
+
+2026-04-13 14:58:48.275507 [info]: Got 1 http line: Cache-Control: max-age=0
+
+2026-04-13 14:58:48.275517 [info]: oop! unknow header Cache-Control: max-age=0
+
+2026-04-13 14:58:48.275531 [info]: Got 1 http line: sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 14:58:48.275543 [info]: oop! unknow header sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"
+
+2026-04-13 14:58:48.275555 [info]: Got 1 http line: sec-ch-ua-mobile: ?0
+
+2026-04-13 14:58:48.275567 [info]: oop! unknow header sec-ch-ua-mobile: ?0
+
+2026-04-13 14:58:48.275579 [info]: Got 1 http line: sec-ch-ua-platform: "Windows"
+
+2026-04-13 14:58:48.275591 [info]: oop! unknow header sec-ch-ua-platform: "Windows"
+
+2026-04-13 14:58:48.275602 [info]: Got 1 http line: Origin: http://localhost:9006
+
+2026-04-13 14:58:48.275614 [info]: oop! unknow header Origin: http://localhost:9006
+
+2026-04-13 14:58:48.275626 [info]: Got 1 http line: Content-Type: application/x-www-form-urlencoded
+
+2026-04-13 14:58:48.275637 [info]: oop! unknow header Content-Type: application/x-www-form-urlencoded
+
+2026-04-13 14:58:48.275650 [info]: Got 1 http line: Upgrade-Insecure-Requests: 1
+
+2026-04-13 14:58:48.275661 [info]: oop! unknow header Upgrade-Insecure-Requests: 1
+
+2026-04-13 14:58:48.275674 [info]: Got 1 http line: User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 14:58:48.275686 [info]: oop! unknow header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0
+
+2026-04-13 14:58:48.275699 [info]: Got 1 http line: Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 14:58:48.275710 [info]: oop! unknow header Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+2026-04-13 14:58:48.275722 [info]: Got 1 http line: Sec-Fetch-Site: same-origin
+
+2026-04-13 14:58:48.275734 [info]: oop! unknow header Sec-Fetch-Site: same-origin
+
+2026-04-13 14:58:48.275745 [info]: Got 1 http line: Sec-Fetch-Mode: navigate
+
+2026-04-13 14:58:48.275757 [info]: oop! unknow header Sec-Fetch-Mode: navigate
+
+2026-04-13 14:58:48.275769 [info]: Got 1 http line: Sec-Fetch-User: ?1
+
+2026-04-13 14:58:48.275780 [info]: oop! unknow header Sec-Fetch-User: ?1
+
+2026-04-13 14:58:48.275792 [info]: Got 1 http line: Sec-Fetch-Dest: document
+
+2026-04-13 14:58:48.275803 [info]: oop! unknow header Sec-Fetch-Dest: document
+
+2026-04-13 14:58:48.275815 [info]: Got 1 http line: Referer: http://localhost:9006/0
+
+2026-04-13 14:58:48.275827 [info]: oop! unknow header Referer: http://localhost:9006/0
+
+2026-04-13 14:58:48.275839 [info]: Got 1 http line: Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 14:58:48.276095 [info]: oop! unknow header Accept-Encoding: gzip, deflate, br, zstd
+
+2026-04-13 14:58:48.276121 [info]: Got 1 http line: Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 14:58:48.276131 [info]: oop! unknow header Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-GB;q=0.7,en-US;q=0.6
+
+2026-04-13 14:58:48.276138 [info]: Got 1 http line: 
+
+2026-04-13 14:58:48.276146 [info]: Got 1 http line: user=%E5%87%80%E5%88%A9%E6%B6%A6%E4%B8%BA%E5%9B%BA%E4%BD%93%E8%83%B6&password=123414
+
+2026-04-13 14:58:48.276153 [info]: m_url: /3CGISQL.cgi
+
