@@ -2,10 +2,9 @@
 #include <time.h>
 #include <sys/time.h>
 #include <stdarg.h>
-#include "Log.h"
 #include <pthread.h>
+#include "Log.h"
 
-using namespace std;
 
 Log::Log() {
     m_count = 0;
@@ -14,9 +13,10 @@ Log::Log() {
 
 Log::~Log() {
     if(m_is_async) {
-        m_log_queue->push(""); // 发送退出信号
+        m_log_queue -> push(""); // 发送退出信号
         pthread_join(m_tid, nullptr); // 等待异步写线程结束
     }
+
     if(m_fp != nullptr) fclose(m_fp);
 }
 
@@ -24,7 +24,7 @@ Log::~Log() {
 bool Log::init(const char *file_name, int close_log, int log_buf_size, int split_lines, int max_queue_size) {
     if(max_queue_size >= 1) { //如果设置了异步写日志，则创建阻塞队列
         m_is_async = true;
-        m_log_queue = new Block_Queue<string>(max_queue_size);
+        m_log_queue = new Block_Queue<std::string>(max_queue_size);
         //flush_log_thread为线程回调函数，创建线程异步写日志
         pthread_create(&m_tid, nullptr, flush_log_thread, nullptr);
     }
@@ -103,7 +103,7 @@ void Log::write_log(int level, const char* format, ...) {
 
     va_list valst;
     va_start(valst, format); //将format参数之后的参数保存到valst中，valst是一个指向参数列表的指针
-    string log_str;
+    std::string log_str;
     m_mutex.lock();
     int n = snprintf(m_buf, m_log_buf_size - 1, "%d-%02d-%02d %02d:%02d:%02d.%06ld %s ", 
                     my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday, my_tm.tm_hour, 

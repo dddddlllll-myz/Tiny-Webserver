@@ -20,9 +20,7 @@ int main(int argc, char* argv[]) {
 
     Webserver server;
     server.init(config.PORT, user, passwd, databasename, config.LOGWrite, config.OPT_LINGER,
-                config.TRIGMode, config.sql_num, config.thread_num, config.close_log, config.actor_model);
-
-    server.m_worker_processes = config.worker_processes; // 设置worker进程数量
+                config.TRIGMode, config.sql_num, config.thread_num, config.close_log, config.actor_model, config.worker_processes);
 
     server.log_write(); // 日志系统初始化
 

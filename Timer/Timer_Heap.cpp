@@ -38,10 +38,11 @@ void Timer_Heap::sift_down_(size_t index) {
             min_child = r;
         }
 
-        if (heap_[index] -> expire > heap_[min_child] -> expire) {
+        if(heap_[index] -> expire > heap_[min_child] -> expire) {
             swap_(index, min_child);
             index = min_child;
-        } else break;
+        } 
+        else break;
     }
 }
 
@@ -57,7 +58,7 @@ void Timer_Heap::adjust_timer(Util_Timer* timer) {
     if(!timer) return;
 
     size_t idx = timer -> index_;
-    if (idx >= heap_.size() || heap_[idx] != timer) return;
+    if(idx >= heap_.size() || heap_[idx] != timer) return;
 
     // 先尝试上浮
     size_t p = parent_(idx);
@@ -94,7 +95,7 @@ void Timer_Heap::tick() {
     // 不断取出堆顶的过期定时器
     while(!heap_.empty()) {
         Util_Timer* top = heap_[0];
-        if (cur < top->expire) break;
+        if(cur < top->expire) break;
 
         top -> cb_func(top -> user_data);  // 执行回调
 

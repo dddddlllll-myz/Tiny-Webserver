@@ -72,7 +72,7 @@ public:
     ~Http_Conn() {}
 
 public:
-    void init(int sockfd, const sockaddr_in &addr, char *, int, int, string user, string passwd, string sqlname, Conn_Pool *connPool);
+    void init(int sockfd, const sockaddr_in &addr, char *, int, int, std::string user, std::string passwd, std::string sqlname, Conn_Pool *connPool);
     void close_conn(bool real_close = true);
     void process();
     bool read_once();
@@ -138,7 +138,7 @@ private:
     int bytes_have_send;
     char *doc_root; //网站根目录
 
-    map<string, string> m_users;
+    std::map<std::string, std::string> m_users;
     int m_TRIGMode; // 触发组合模式 
     int m_close_log;
 

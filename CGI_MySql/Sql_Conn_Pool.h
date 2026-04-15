@@ -43,7 +43,7 @@ private:
 	int m_CurrConn;  //当前已使用的连接数
 	int m_FreeConn; //当前空闲的连接数
 	Lock lock;
-	list<MYSQL *> connList; //连接池
+	std::list<MYSQL *> connList; //连接池
 	Semaphore reserve; //信号量，用于控制连接池的使用数量，线程安全
     bool m_initialized; //初始化标志
 

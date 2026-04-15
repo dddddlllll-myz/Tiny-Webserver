@@ -27,9 +27,8 @@ Webserver::~Webserver() {
     free(m_root);
 }
 
-void Webserver::init(int port, string user, string passWord, string databaseName, int log_write,
-                     int opt_linger, int trigmode, int sql_num, int thread_num, int close_log, int actor_model)
-{
+void Webserver::init(int port, std::string user, std::string passWord, std::string databaseName, int log_write,
+                     int opt_linger, int trigmode, int sql_num, int thread_num, int close_log, int actor_model, int worker_processes) {
     m_port = port;
     m_user = user;
     m_passWord = passWord;
@@ -41,7 +40,7 @@ void Webserver::init(int port, string user, string passWord, string databaseName
     m_TRIGMode = trigmode;
     m_close_log = close_log;
     m_actormodel = actor_model;
-    m_worker_processes = 1; // 默认单进程
+    m_worker_processes = worker_processes;
 }
 
 void Webserver::trig_mode() {

@@ -57,6 +57,7 @@ MYSQL* Conn_Pool::GetConn() { //获取数据库连接
     MYSQL* con = NULL;
 
     if(!m_initialized) return NULL;
+    
     if(connList.size() == 0) return NULL;
 
     reserve.wait(); // 等待信号量，确保有可用连接

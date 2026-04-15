@@ -16,7 +16,7 @@ const char *error_500_title = "Internal Error";
 const char *error_500_form = "There was an unusual problem serving the request file.\n";
 
 Lock m_lock;
-map<string, string> users;
+std::map<std::string, std::string> users;
 
 // URL路由映射：路径标识符 -> HTML文件（仅静态页面）
 static const std::map<char, const char*> URL_ROUTES = {
@@ -65,8 +65,8 @@ void Http_Conn::initmysql_result(Conn_Pool* connPool) {
 
     //从结果集中获取下一行，将对应的用户名和密码，存入map中
     while(MYSQL_ROW row = mysql_fetch_row(result)) {
-        string temp1(row[0]);
-        string temp2(row[1]);
+        std::string temp1(row[0]);
+        std::string temp2(row[1]);
         m_lock.lock();
         users[temp1] = temp2;
         m_lock.unlock();
@@ -126,7 +126,7 @@ void Http_Conn::close_conn(bool real_close) {
     }
 }
 
-void Http_Conn::init(int sockfd, const sockaddr_in &addr, char *root, int TRIGMode, int close_log, string user, string passwd, string sqlname, Conn_Pool *connPool) {
+void Http_Conn::init(int sockfd, const sockaddr_in &addr, char *root, int TRIGMode, int close_log, std::string user, std::string passwd, std::string sqlname, Conn_Pool *connPool) {
     m_sockfd = sockfd;
     m_address = addr;
 
