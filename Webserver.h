@@ -59,6 +59,7 @@ public:
     int m_actormodel;
 
     int m_pipefd[2];
+    int m_log_pipefd[2];  // 日志pipe，fork前创建
     int m_epollfd;
     Http_Conn* users;
     std::vector<pid_t> m_worker_pids;  // 存储所有worker进程PID

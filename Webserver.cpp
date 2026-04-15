@@ -143,6 +143,11 @@ void Webserver::eventListen() {
 }
 
 void Webserver::fork_workers() {
+    // 创建日志pipe，fork前创建确保所有子进程共享同一个pipe
+    socketpair(PF_UNIX, SOCK_STREAM, 0, m_log_pipefd);
+    // 设置Log的pipe写端，fork前调用（创建pipe_reader读线程）
+    Log::get_instance() -> set_pipefd(m_log_pipefd[1]);
+
     for(int i = 0; i < m_worker_processes; ++i) {
         pid_t pid = fork();
         if(pid < 0) {
@@ -150,6 +155,9 @@ void Webserver::fork_workers() {
             exit(1);
         }
         if(pid == 0) { // 子进程
+            // 关闭日志pipe读端，只保留写端
+            close(m_log_pipefd[0]);
+
             // 每个子进程有独立的epollfd
             m_epollfd = epoll_create(5);
             assert(m_epollfd != -1);
@@ -179,6 +187,9 @@ void Webserver::fork_workers() {
         // 父进程记录worker PID
         m_worker_pids.push_back(pid);
     }
+
+    // 父进程：关闭日志pipe写端（读端由Log::pipe_reader线程使用）
+    close(m_log_pipefd[1]);
 
     // 父进程：监控子进程，支持优雅关闭
     while(true) {

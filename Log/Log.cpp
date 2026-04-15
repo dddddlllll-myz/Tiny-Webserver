@@ -3,12 +3,36 @@
 #include <sys/time.h>
 #include <stdarg.h>
 #include <pthread.h>
+#include <unistd.h>
 #include "Log.h"
 
 
 Log::Log() {
     m_count = 0;
     m_is_async = false;
+}
+
+int Log::s_pipefd = 0; // 初始化静态成员变量，pipe写端，所有子进程共享
+
+void Log::set_pipefd(int pipefd) {
+    if(s_pipefd != 0) return; // 只在首次设置（fork前父进程调用一次）
+    s_pipefd = pipefd;
+    // 父进程：创建pipe读线程，从pipe读日志写文件
+    pthread_t tid;
+    pthread_create(&tid, nullptr, pipe_reader, nullptr);
+}
+
+void *Log::pipe_reader(void *arg) {
+    char buf[8192];
+    while(true) {
+        ssize_t n = read(s_pipefd, buf, sizeof(buf));
+        if(n <= 0) break;
+        Log::get_instance() -> m_mutex.lock();
+        fwrite(buf, 1, n, Log::get_instance() -> m_fp);
+        fflush(Log::get_instance() -> m_fp);
+        Log::get_instance() -> m_mutex.unlock();
+    }
+    return nullptr;
 }
 
 Log::~Log() {
@@ -60,7 +84,41 @@ bool Log::init(const char *file_name, int close_log, int log_buf_size, int split
 
 void Log::write_log(int level, const char* format, ...) {
     if(!m_fp) return;
-    
+
+    // 子进程通过pipe写日志，父进程统一写文件
+    if(s_pipefd > 0) {
+        struct timeval now = {0, 0};
+        gettimeofday(&now, nullptr);
+        time_t t = now.tv_sec;
+        struct tm* sys_tm = localtime(&t);
+        struct tm my_tm = *sys_tm;
+
+        char s[16] = {0};
+        switch(level) {
+            case 0: strcpy(s, "[debug]:"); break;
+            case 1: strcpy(s, "[info]:"); break;
+            case 2: strcpy(s, "[warn]:"); break;
+            case 3: strcpy(s, "[error]:"); break;
+            default: strcpy(s, "[info]:"); break;
+        }
+
+        // 使用栈buffer，避免多线程并发时m_buf被覆盖
+        char log_buf[8192];
+        va_list valst;
+        va_start(valst, format);
+        int n = snprintf(log_buf, sizeof(log_buf) - 1, "%d-%02d-%02d %02d:%02d:%02d.%06ld %s ",
+                        my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday, my_tm.tm_hour,
+                        my_tm.tm_min, my_tm.tm_sec, now.tv_usec, s);
+        int m = vsnprintf(log_buf + n, sizeof(log_buf) - 1 - n, format, valst);
+        log_buf[n + m] = '\n';
+        va_end(valst);
+
+        // 写入pipe，父进程pipe_reader线程负责写文件（不含\0，\n作为自然分隔符）
+        write(s_pipefd, log_buf, n + m + 1);
+        return;
+    }
+
+    // 以下是父进程fork前的原始逻辑（直接写文件）
     struct timeval now = {0, 0};
     gettimeofday(&now, nullptr); //获取当前时间，精确到微秒
     time_t t = now.tv_sec; //获取当前时间的秒数部分
@@ -90,7 +148,7 @@ void Log::write_log(int level, const char* format, ...) {
             snprintf(new_log_full_name, 255, "%s%s%s", dir_name, tail, log_name);
             m_today = my_tm.tm_mday;
             m_count = 0;
-        } 
+        }
         else { //如果是同一天，创建一个新的日志文件，文件名后缀加上当前的日志行数
             snprintf(new_log_full_name, 255, "%s%s%s.%lld", dir_name, tail, log_name, m_count / m_split_lines);
         }
@@ -105,10 +163,10 @@ void Log::write_log(int level, const char* format, ...) {
     va_start(valst, format); //将format参数之后的参数保存到valst中，valst是一个指向参数列表的指针
     std::string log_str;
     m_mutex.lock();
-    int n = snprintf(m_buf, m_log_buf_size - 1, "%d-%02d-%02d %02d:%02d:%02d.%06ld %s ", 
-                    my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday, my_tm.tm_hour, 
+    int n = snprintf(m_buf, m_log_buf_size - 1, "%d-%02d-%02d %02d:%02d:%02d.%06ld %s ",
+                    my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday, my_tm.tm_hour,
                     my_tm.tm_min, my_tm.tm_sec, now.tv_usec, s); //将日志内容格式化到m_buf中，n是格式化后的字符串长度
-    
+
     int m = vsnprintf(m_buf + n, m_log_buf_size - 1 - n, format, valst); //将format参数之后的参数格式化到m_buf中，m是格式化后的字符串长度
     m_buf[n + m] = '\n'; //在日志内容的末尾添加一个换行符
     m_buf[n + m + 1] = '\0'; //在日志内容的末尾添加一个字符串结束符
@@ -117,7 +175,7 @@ void Log::write_log(int level, const char* format, ...) {
 
     if(m_is_async && !m_log_queue -> full()) { //如果是异步写日志，并且阻塞队列没有满，将日志内容添加到阻塞队列中
         m_log_queue -> push(log_str);
-    } 
+    }
     else { //如果是同步写日志，或者阻塞队列已经满了，直接将日志内容写入文件中
         m_mutex.lock();
         fputs(log_str.c_str(), m_fp); //将日志内容写入文件中，c_str()是string类型的成员函数，返回一个指向字符串内容的指针
