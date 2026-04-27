@@ -173,6 +173,11 @@ void Webserver::fork_workers() {
             utils.addfd(m_epollfd, m_listenfd, false, m_LISTENTrigmode);
             utils.addfd(m_epollfd, m_pipefd[0], false, 0);
 
+            // 每个子进程有独立的数据库连接池
+            m_connPool = Conn_Pool::GetInstance();
+            m_connPool->init("localhost", m_user, m_passWord, m_databaseName, 3306, m_sql_num, m_close_log);
+            users->initmysql_result(m_connPool);
+
             // 每个子进程有独立的线程池
             m_pool = new Thread_Pool<Http_Conn>(m_actormodel, m_connPool, m_thread_num);
 

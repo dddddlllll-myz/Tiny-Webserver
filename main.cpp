@@ -24,9 +24,8 @@ int main(int argc, char* argv[]) {
 
     server.log_write(); // 日志系统初始化
 
-    server.sql_pool(); // 数据库连接池初始化
-
-    server.thread_pool(); // 线程池初始化
+    // 注意：sql_pool() 和 thread_pool() 在 fork_workers() 中每个子进程独立创建
+    // 避免 fork 后共享父进程的数据库连接和线程池
 
     server.trig_mode(); // 触发模式设置
 
