@@ -406,7 +406,8 @@ void Webserver::eventLoop() {
     time_t graceful_start = 0;  // 记录优雅关闭开始时间
 
     while(!stop_server) {
-        int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
+        int epoll_timeout = (graceful_start > 0) ? 1000 : -1;
+        int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, epoll_timeout);
         if(number < 0 && errno != EINTR) {
             LOG_ERROR("%s:errno is %d", "epoll failure", errno);
             break;
@@ -444,6 +445,7 @@ void Webserver::eventLoop() {
                     close(m_listenfd);  // 关闭监听套接字
                     printf("worker %d: starting graceful shutdown, will exit in %d seconds or when all connections close\n",
                            getpid(), GRACEFUL_SHUTDOWN_TIMEOUT);
+                    stop_server = false;
                 }
             }
             else if(events[i].events & EPOLLIN) {
