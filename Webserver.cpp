@@ -145,8 +145,6 @@ void Webserver::eventListen() {
 void Webserver::fork_workers() {
     // 创建日志pipe，fork前创建确保所有子进程共享同一个pipe
     socketpair(PF_UNIX, SOCK_STREAM, 0, m_log_pipefd);
-    // 设置Log的pipe写端，fork前调用（创建pipe_reader读线程）
-    Log::get_instance() -> set_pipefd(m_log_pipefd[1]);
 
     for(int i = 0; i < m_worker_processes; ++i) {
         pid_t pid = fork();
@@ -195,6 +193,9 @@ void Webserver::fork_workers() {
 
     // 父进程：关闭日志pipe写端（读端由Log::pipe_reader线程使用）
     close(m_log_pipefd[1]);
+
+    // 在fork之后、监控循环之前，设置pipe并启动pipe_reader线程（避免fork后mutex死锁）
+    Log::get_instance() -> set_pipefd(m_log_pipefd[1]);
 
     // 父进程：监控子进程，支持优雅关闭
     while(true) {
@@ -368,9 +369,7 @@ void Webserver::dealwithread(int sockfd) {
             m_pool -> append_p(users + sockfd); // 将读事件放入请求队列
             if(timer) adjust_timer(timer); // 调整定时器
         }
-        else {
-            deal_timer(timer, sockfd);
-        }
+        else deal_timer(timer, sockfd);
     }
 }
 
@@ -398,9 +397,7 @@ void Webserver::dealwithwrite(int sockfd) {
             LOG_INFO("send data to the client(%s)", inet_ntoa(users[sockfd].get_address() -> sin_addr));
             if(timer) adjust_timer(timer);
         }
-        else {
-            deal_timer(timer, sockfd);
-        }
+        else deal_timer(timer, sockfd);
     }
 }
 

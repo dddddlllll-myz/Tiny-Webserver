@@ -24,13 +24,60 @@ void Log::set_pipefd(int pipefd) {
 
 void *Log::pipe_reader(void *arg) {
     char buf[8192];
+    char line[8192];
+    int line_len = 0;
+
     while(true) {
         ssize_t n = read(s_pipefd, buf, sizeof(buf));
         if(n <= 0) break;
-        Log::get_instance() -> m_mutex.lock();
-        fwrite(buf, 1, n, Log::get_instance() -> m_fp);
-        fflush(Log::get_instance() -> m_fp);
-        Log::get_instance() -> m_mutex.unlock();
+
+        for(ssize_t i = 0; i < n; ++i) {
+            if(buf[i] == '\n') {
+                line[line_len] = '\0';
+                if(line_len > 0) {
+                    // 使用与write_log相同的日志切换逻辑
+                    Log* instance = Log::get_instance();
+                    instance -> m_mutex.lock();
+
+                    time_t t = time(nullptr);
+                    struct tm* sys_tm = localtime(&t);
+                    struct tm my_tm = *sys_tm;
+
+                    // 检查是否需要切换日志文件
+                    if(instance -> m_today != my_tm.tm_mday || instance -> m_count % instance -> m_split_lines == 0) {
+                        char new_log_full_name[256] = {0};
+                        fflush(instance -> m_fp);
+                        fclose(instance -> m_fp);
+                        char tail[16] = {0};
+                        snprintf(tail, 16, "%d_%02d_%02d_", my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday);
+
+                        if(instance -> m_today != my_tm.tm_mday) {
+                            snprintf(new_log_full_name, 255, "%s%s%s", instance -> dir_name, tail, instance -> log_name);
+                            instance -> m_today = my_tm.tm_mday;
+                            instance -> m_count = 0;
+                        }
+                        else {
+                            snprintf(new_log_full_name, 255, "%s%s%s.%lld", instance -> dir_name, tail, instance -> log_name, instance -> m_count / instance -> m_split_lines);
+                        }
+                        instance->m_fp = fopen(new_log_full_name, "a");
+                        if(!instance -> m_fp) {
+                            instance -> m_mutex.unlock();
+                            line_len = 0;
+                            continue;
+                        }
+                    }
+
+                    instance->m_count++;
+                    fputs(line, instance -> m_fp);
+                    fputc('\n', instance -> m_fp);
+                    instance->m_mutex.unlock();
+                }
+                line_len = 0;
+            }
+            else if(line_len < (int)(sizeof(line) - 1)) {
+                line[line_len++] = buf[i];
+            }
+        }
     }
     return nullptr;
 }
