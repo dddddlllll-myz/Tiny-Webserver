@@ -128,9 +128,10 @@ void Utils::addfd(int epollfd, int fd, bool one_shot, int TRIGMode) {
     epoll_event event;
     event.data.fd = fd;
 
-    if(TRIGMode == 1) event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
+    if(TRIGMode & 1) event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
     else event.events = EPOLLIN | EPOLLRDHUP;
 
+    if(TRIGMode & EPOLLEXCLUSIVE) event.events |= EPOLLEXCLUSIVE;
     if(one_shot) event.events |= EPOLLONESHOT;
     epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
     setnonblocking(fd);

@@ -170,7 +170,7 @@ void Webserver::fork_workers() {
             Utils::u_pipefd = m_pipefd;
 
             // 重新注册监听socket和信号管道到新的epollfd
-            utils.addfd(m_epollfd, m_listenfd, false, m_LISTENTrigmode);
+            utils.addfd(m_epollfd, m_listenfd, false, m_LISTENTrigmode | EPOLLEXCLUSIVE);
             utils.addfd(m_epollfd, m_pipefd[0], false, 0);
 
             // 每个子进程有独立的数据库连接池
@@ -234,8 +234,12 @@ void Webserver::fork_workers() {
             if(WIFEXITED(status)) {
                 printf("worker %d exited normally with code %d\n",
                        pid, WEXITSTATUS(status));
-            } 
+            }
             else printf("worker %d crashed\n", pid);
+        }
+        if(pid == 0) {
+            // 没有子进程状态改变，sleep避免CPU空转
+            sleep(1);
         }
     }
 }
