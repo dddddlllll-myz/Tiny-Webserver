@@ -23,18 +23,19 @@ private:
 private:
     int m_thread_number;        //线程池中的线程数
     int m_max_requests;         //请求队列中允许的最大请求数
-    pthread_t *m_threads;       //描述线程池的数组，其大小为m_thread_number
-    std::list<T *> m_workqueue; //请求队列
+    pthread_t* m_threads;       //描述线程池的数组，其大小为m_thread_number
+    std::list<T*> m_workqueue; //请求队列
     Lock m_queuelock;           //保护请求队列的互斥锁
     Semaphore m_queuestat;      //是否有任务需要处理
     Conn_Pool* m_connPool;     //数据库连接池
     int m_actor_model;         //模型切换
+    bool m_stop;               //是否停止线程池
 };
 
 template <typename T>
-Thread_Pool<T>::Thread_Pool(int actor_model, Conn_Pool* connPool, int thread_number, int max_request) : m_actor_model(actor_model), m_thread_number(thread_number), m_max_requests(max_request), m_threads(NULL), m_connPool(connPool) {
+Thread_Pool<T>::Thread_Pool(int actor_model, Conn_Pool* connPool, int thread_number, int max_request) : m_actor_model(actor_model), m_thread_number(thread_number), m_max_requests(max_request), m_threads(NULL), m_connPool(connPool), m_stop(false) {
     if(thread_number <= 0 || max_request <= 0) throw std::exception();
-    
+
     m_threads = new pthread_t[m_thread_number];
     if(!m_threads) throw std::exception();
 
@@ -43,15 +44,23 @@ Thread_Pool<T>::Thread_Pool(int actor_model, Conn_Pool* connPool, int thread_num
             delete[] m_threads;
             throw std::exception();
         }
-        if(pthread_detach(m_threads[i]) != 0) { // 设置线程分离，线程结束后自动回收资源
-            delete[] m_threads;
-            throw std::exception();
-        }
     }
 }
 
 template <typename T>
 Thread_Pool<T>::~Thread_Pool() {
+    m_queuelock.lock();
+    m_stop = true;
+    m_queuelock.unlock();
+
+    for(int i = 0; i < m_thread_number; ++i) {
+        m_queuestat.post();
+    }
+
+    for(int i = 0; i < m_thread_number; ++i) {
+        pthread_join(m_threads[i], NULL);
+    }
+
     delete[] m_threads;
 }
 
@@ -93,13 +102,20 @@ void* Thread_Pool<T>::worker(void* arg) {
 
 template <typename T>
 void Thread_Pool<T>::run() {
-    while(true) {
+    while(!m_stop) {
         m_queuestat.wait(); // 等待任务
         m_queuelock.lock();
+
+        if(m_stop && m_workqueue.empty()) {
+            m_queuelock.unlock();
+            break;
+        }
+
         if(m_workqueue.empty()) {
             m_queuelock.unlock();
             continue;
         }
+        
         T* request = m_workqueue.front();
         m_workqueue.pop_front();
         m_queuelock.unlock();

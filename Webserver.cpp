@@ -93,11 +93,11 @@ void Webserver::eventListen() {
 
     if(0 == m_OPT_LINGER) { // 优雅关闭连接
         struct linger tmp = {0, 1}; // 结构体linger，l_onoff为0表示不使用linger选项
-        setsockopt(m_listenfd, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp)); // 设置套接字选项，SOL_SOCKET表示套接字级别，SO_LINGER表示设置linger选项，tmp为设置的选项值，sizeof(tmp)为选项值的大小
+        setsockopt(m_listenfd, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp)); // 设置套接字选项，SOL_SOCKET表示套接字级别，SO_LINGER表示设置linger选项，tmp为设置的选项值
     }
     else if(1 == m_OPT_LINGER) { // 强制关闭连接
         struct linger tmp = {1, 1}; // l_onoff为1表示使用linger选项，l_linger为1表示最多等待1秒钟后强制关闭连接
-        setsockopt(m_listenfd, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp)); // 设置套接字选项
+        setsockopt(m_listenfd, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp));
     }
 
     int res = 0;
@@ -108,7 +108,7 @@ void Webserver::eventListen() {
     address.sin_port = htons(m_port); // 端口号，htons将主机字节序转换为网络字节序
 
     int flag = 1; // 设置套接字选项，SO_REUSEADDR表示允许重用本地地址和端口
-    setsockopt(m_listenfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)); // 设置套接字选项
+    setsockopt(m_listenfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
 
     int reuseport = 1; // SO_REUSEPORT允许多个进程绑定同一端口，内核自动负载均衡
     setsockopt(m_listenfd, SOL_SOCKET, SO_REUSEPORT, &reuseport, sizeof(reuseport));
@@ -315,7 +315,12 @@ bool Webserver::dealwithsignal(bool& timeout, bool& stop_server) {
     int sig;
     char signals[1024];
     int res = recv(m_pipefd[0], signals, sizeof(signals), 0);
-    if(res <= 0) return false;
+    if(res == -1) {
+        if(errno ==EAGAIN || errno == EWOULDBLOCK || errno == EINTR) return true;
+
+        return false;
+    }
+    else if(res == 0) return false;
     else {
         for(int i = 0; i < res; ++i) {
             switch(signals[i]) {
