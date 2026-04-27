@@ -28,7 +28,10 @@ public:
     void flush(void);
 
     // 设置日志pipe的写端（fork前调用，pipe对所有子进程可见）
-    static void set_pipefd(int pipefd);
+    static void set_pipe_write_fd(int fd);
+    static void start_pipe_reader(int read_fd);
+
+    static int s_pipe_read_fd; // pipe读端，父进程pipe_reader线程使用
 
 private:
     Log();

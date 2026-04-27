@@ -12,12 +12,15 @@ Log::Log() {
     m_is_async = false;
 }
 
-int Log::s_pipefd = 0; // 初始化静态成员变量，pipe写端，所有子进程共享
+int Log::s_pipefd = 0; // pipe写端，所有子进程共享
+int Log::s_pipe_read_fd = 0; // pipe读端，父进程pipe_reader线程使用
 
-void Log::set_pipefd(int pipefd) {
-    if(s_pipefd != 0) return; // 只在首次设置（fork前父进程调用一次）
-    s_pipefd = pipefd;
-    // 父进程：创建pipe读线程，从pipe读日志写文件
+void Log::set_pipe_write_fd(int fd) {
+    s_pipefd = fd;
+}
+
+void Log::start_pipe_reader(int read_fd) {
+    s_pipe_read_fd = read_fd;
     pthread_t tid;
     pthread_create(&tid, nullptr, pipe_reader, nullptr);
 }
@@ -28,7 +31,7 @@ void *Log::pipe_reader(void *arg) {
     int line_len = 0;
 
     while(true) {
-        ssize_t n = read(s_pipefd, buf, sizeof(buf));
+        ssize_t n = read(s_pipe_read_fd, buf, sizeof(buf));
         if(n <= 0) break;
 
         for(ssize_t i = 0; i < n; ++i) {
