@@ -46,9 +46,9 @@ void Conn_Pool::init(std::string url, std::string User, std::string PassWord, st
 
         connList.push_back(con);
         ++m_FreeConn;
+        reserve.post();
     }
 
-    reserve = Semaphore(m_FreeConn); // 初始化信号量，值为连接池中的连接数量
     m_MaxConn = MaxConn;
     m_initialized = true;
 }
