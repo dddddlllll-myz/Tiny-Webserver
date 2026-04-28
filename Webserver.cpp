@@ -147,7 +147,7 @@ void Webserver::fork_workers() {
     socketpair(PF_UNIX, SOCK_STREAM, 0, m_log_pipefd);
 
     // fork前设置pipe写端，所有子进程继承
-    Log::get_instance()->set_pipe_write_fd(m_log_pipefd[1]);
+    Log::get_instance() -> set_pipe_write_fd(m_log_pipefd[1]);
 
     for(int i = 0; i < m_worker_processes; ++i) {
         pid_t pid = fork();
@@ -176,8 +176,8 @@ void Webserver::fork_workers() {
 
             // 每个子进程有独立的数据库连接池
             m_connPool = Conn_Pool::GetInstance();
-            m_connPool->init("localhost", m_user, m_passWord, m_databaseName, 3306, m_sql_num, m_close_log);
-            users->initmysql_result(m_connPool);
+            m_connPool -> init("localhost", m_user, m_passWord, m_databaseName, 3306, m_sql_num, m_close_log);
+            users -> initmysql_result(m_connPool);
 
             // 每个子进程有独立的线程池
             m_pool = new Thread_Pool<Http_Conn>(m_actormodel, m_connPool, m_thread_num);
@@ -185,6 +185,9 @@ void Webserver::fork_workers() {
             // 重新设置SIGTERM handler：让SIGTERM写入pipe，由dealwithsignal处理
             //（因为fork继承的是parent_sigterm_handler，不写入pipe）
             utils.addsig(SIGTERM, utils.sig_handler, false);
+
+            // 每个子进程设置独立的SIGALRM定时器
+            alarm(TIMESLOT);
 
             // 子进程进入事件循环，不返回
             eventLoop();
@@ -198,7 +201,7 @@ void Webserver::fork_workers() {
     close(m_log_pipefd[1]);
 
     // 启动pipe_reader线程（读端由该线程使用）
-    Log::get_instance()->start_pipe_reader(m_log_pipefd[0]);
+    Log::get_instance() -> start_pipe_reader(m_log_pipefd[0]);
 
     // 父进程：监控子进程，支持优雅关闭
     while(true) {

@@ -32,7 +32,11 @@ void *Log::pipe_reader(void *arg) {
 
     while(true) {
         ssize_t n = read(s_pipe_read_fd, buf, sizeof(buf));
-        if(n <= 0) break;
+        if(n < 0) {
+            if(errno == EINTR || errno == EAGAIN) continue;
+            break;
+        }
+        if(n == 0) break;
 
         for(ssize_t i = 0; i < n; ++i) {
             if(buf[i] == '\n') {
@@ -73,6 +77,7 @@ void *Log::pipe_reader(void *arg) {
                     instance->m_count++;
                     fputs(line, instance -> m_fp);
                     fputc('\n', instance -> m_fp);
+                    fflush(instance -> m_fp);
                     instance->m_mutex.unlock();
                 }
                 line_len = 0;
