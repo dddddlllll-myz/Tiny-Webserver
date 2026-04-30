@@ -633,7 +633,18 @@ bool Http_Conn::add_content_length(int content_length) {
 }
 
 bool Http_Conn::add_content_type() {
-    return add_response("Content-Type: %s\r\n", "text/html");
+    const char* type = "text/html";
+    const char* dot = strrchr(m_real_file, '.');
+    if(dot) {
+        if(strcmp(dot, ".mp4") == 0) type = "video/mp4";
+        else if(strcmp(dot, ".jpg") == 0 || strcmp(dot, ".jpeg") == 0) type = "image/jpeg";
+        else if(strcmp(dot, ".gif") == 0) type = "image/gif";
+        else if(strcmp(dot, ".png") == 0) type = "image/png";
+        else if(strcmp(dot, ".css") == 0) type = "text/css";
+        else if(strcmp(dot, ".js") == 0) type = "application/javascript";
+        else if(strcmp(dot, ".ico") == 0) type = "image/x-icon";
+    }
+    return add_response("Content-Type: %s\r\n", type);
 }
 
 bool Http_Conn::add_linger() {
