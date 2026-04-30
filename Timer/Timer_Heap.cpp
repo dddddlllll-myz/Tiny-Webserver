@@ -128,12 +128,19 @@ void Utils::addfd(int epollfd, int fd, bool one_shot, int TRIGMode) {
     epoll_event event;
     event.data.fd = fd;
 
-    if(TRIGMode & 1) event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
-    else event.events = EPOLLIN | EPOLLRDHUP;
-
-    if(TRIGMode & EPOLLEXCLUSIVE) event.events |= EPOLLEXCLUSIVE;
+    // EPOLLEXCLUSIVE cannot be combined with EPOLLRDHUP (EINVAL)
+    if(TRIGMode & EPOLLEXCLUSIVE) {
+        event.events = (TRIGMode & 1) ? (EPOLLIN | EPOLLET) : EPOLLIN;
+    } 
+    else {
+        if(TRIGMode & 1) event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
+        else event.events = EPOLLIN | EPOLLRDHUP;
+    }
     if(one_shot) event.events |= EPOLLONESHOT;
-    epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
+
+    if(epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event) < 0) {
+        perror("epoll_ctl ADD failed");
+    }
     setnonblocking(fd);
 }
 

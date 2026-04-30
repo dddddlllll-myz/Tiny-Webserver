@@ -98,7 +98,9 @@ void addfd(int epollfd, int fd, bool one_shot, int TRIGMode) {
     }
     if(one_shot) event.events |= EPOLLONESHOT; //开启EPOLLONESHOT，保证一个socket连接在任一时刻只被一个线程处理
 
-    epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
+    if(epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event) < 0) {
+        perror("epoll_ctl ADD failed");
+    }
     setnonblocking(fd);
 }
 
