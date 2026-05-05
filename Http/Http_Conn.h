@@ -30,7 +30,7 @@ class Http_Conn {
 public:
     static const int FILENAME_LEN = 200;            // 文件名最大长度
     static const int READ_BUFFER_SIZE = 8192;       // 读缓冲区大小 (8KB)
-    static const int WRITE_BUFFER_SIZE = 4096;      // 写缓冲区大小 (4KB)
+    static const int WRITE_BUFFER_SIZE = 8192;      // 写缓冲区大小 (8KB)
 
     enum METHOD {
         GET = 0,
